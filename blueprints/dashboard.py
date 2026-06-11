@@ -11,6 +11,56 @@ from utils.audit import log_action
 from utils.decorators import admin_required
 from utils.helpers import build_calibration_reminders, get_document_rows
 from utils.maintenance import build_due_maintenance_reminders, get_maintenance_type_label
+from datetime import datetime, date, timezone
+
+
+def _build_calibration_reminder_from_maintenance_plan(row):
+    """将维护计划中的校准记录转换为校准提醒格式"""
+    today = datetime.now(timezone.utc).date()
+
+    next_due = row["next_due_date"]
+    if isinstance(next_due, str):
+        due_date = datetime.strptime(next_due, "%Y-%m-%d").date()
+    elif hasattr(next_due, "date"):
+        due_date = next_due.date()
+    elif hasattr(next_due, "year"):
+        due_date = next_due
+    else:
+        return None
+
+    days_left = (due_date - today).days
+
+    # 维护计划默认窗口也是60天内
+    if days_left > 60:
+        return None
+
+    if days_left < 0:
+        severity = "danger"
+        label = "已逾期"
+    elif days_left <= 30:
+        severity = "warning"
+        label = "即将到期"
+    else:
+        severity = "info"
+        label = "需关注"
+
+    return {
+        "device_id": row["device_id"],
+        "device_code": row["device_code"],
+        "device_name": row["device_name"],
+        "doc_id": None,
+        "doc_name": "校准计划",
+        "version": "-",
+        "uploaded_by": row.get("created_by", ""),
+        "upload_time": row.get("created_at", ""),
+        "due_date": due_date.isoformat(),
+        "days_left": days_left,
+        "severity": severity,
+        "label": label,
+        "has_explicit_due": True,
+        "source": "maintenance_plan",
+        "plan_id": row["id"],
+    }
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -141,6 +191,27 @@ def reminders():
             "ORDER BY d.upload_time DESC"
         )
     calibration_rows = cur.fetchall()
+
+    # 维护计划中的校准记录也纳入校准提醒
+    if filter_device:
+        cur.execute(
+            "SELECT mp.*, dev.device_code, dev.device_name "
+            "FROM maintenance_plan mp "
+            "JOIN devices dev ON dev.id = mp.device_id "
+            "WHERE mp.maintenance_type = 'calibration' AND mp.is_active = 1 AND mp.is_closed = 0 "
+            "AND (dev.device_code LIKE %s OR dev.device_name LIKE %s) "
+            "ORDER BY mp.next_due_date ASC",
+            (f"%{filter_device}%", f"%{filter_device}%"),
+        )
+    else:
+        cur.execute(
+            "SELECT mp.*, dev.device_code, dev.device_name "
+            "FROM maintenance_plan mp "
+            "JOIN devices dev ON dev.id = mp.device_id "
+            "WHERE mp.maintenance_type = 'calibration' AND mp.is_active = 1 AND mp.is_closed = 0 "
+            "ORDER BY mp.next_due_date ASC"
+        )
+    maintenance_calibration_rows = cur.fetchall()
     cur.execute("SELECT COUNT(*) AS total FROM approval_requests WHERE status = 'pending'")
     pending_approvals = cur.fetchone()["total"]
     # 检查借阅功能是否开启
@@ -156,9 +227,20 @@ def reminders():
     maintenance_data = build_due_maintenance_reminders(conn, days=7)
     conn.close()
 
-    # 维护提醒列表：逾期 + 今日到期（对应铃铛计数逻辑）
-    maintenance_reminders = maintenance_data["overdue"] + maintenance_data["due_today"] + maintenance_data["due_within_7days"]
-    maintenance_summary = maintenance_data["summary"]
+    # 维护提醒列表：逾期 + 今日到期 + 7日内到期（校准类型已在校准提醒中展示，此处排除）
+    _exclude_calibration = lambda items: [i for i in items if i.get("maintenance_type") != "calibration"]
+    maintenance_reminders = (
+        _exclude_calibration(maintenance_data["overdue"]) +
+        _exclude_calibration(maintenance_data["due_today"]) +
+        _exclude_calibration(maintenance_data["due_within_7days"])
+    )
+    _filtered_overdue = _exclude_calibration(maintenance_data["overdue"])
+    _filtered_due_today = _exclude_calibration(maintenance_data["due_today"])
+    maintenance_summary = {
+        "overdue_count": len(_filtered_overdue),
+        "due_today_count": len(_filtered_due_today),
+        "due_7days_count": len(_exclude_calibration(maintenance_data["due_within_7days"])),
+    }
 
     # 统一把 due_date 转成字符串，方便模板比较
     from datetime import date as _date
@@ -173,7 +255,17 @@ def reminders():
         else:
             item["due_date_str"] = str(dd)[:10]
 
-    all_reminders = build_calibration_reminders(calibration_rows)
+    doc_reminders = build_calibration_reminders(calibration_rows)
+
+    # 将维护计划中的校准记录转换为校准提醒格式并合并
+    for row in maintenance_calibration_rows:
+        reminder = _build_calibration_reminder_from_maintenance_plan(row)
+        if reminder:
+            doc_reminders.append(reminder)
+
+    # 按到期日期排序
+    doc_reminders.sort(key=lambda r: r["due_date"])
+    all_reminders = doc_reminders
 
     # 状态筛选
     if filter_severity and filter_severity != "all":
@@ -393,8 +485,24 @@ def api_calibration_overdue_count():
         "ORDER BY d.upload_time DESC"
     )
     calibration_rows = cur.fetchall()
+
+    # 同时纳入维护计划中的校准记录
+    cur.execute(
+        "SELECT mp.*, dev.device_code, dev.device_name "
+        "FROM maintenance_plan mp "
+        "JOIN devices dev ON dev.id = mp.device_id "
+        "WHERE mp.maintenance_type = 'calibration' AND mp.is_active = 1 AND mp.is_closed = 0 "
+        "ORDER BY mp.next_due_date ASC"
+    )
+    maintenance_calibration_rows = cur.fetchall()
     conn.close()
+
     all_reminders = build_calibration_reminders(calibration_rows)
+    for row in maintenance_calibration_rows:
+        reminder = _build_calibration_reminder_from_maintenance_plan(row)
+        if reminder:
+            all_reminders.append(reminder)
+
     overdue_count = sum(1 for r in all_reminders if r["severity"] == "danger")
     return jsonify({"overdue_count": overdue_count})
 

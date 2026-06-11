@@ -124,6 +124,9 @@
               {% if row.has_explicit_due %}
               <span class="badge badge-info" style="font-size:10px;">精确</span>
               {% endif %}
+              {% if row.source == 'maintenance_plan' %}
+              <span class="badge badge-secondary" style="font-size:10px;">计划</span>
+              {% endif %}
             </div>
           </td>
           <td>v{{ row.version }}</td>
@@ -155,7 +158,11 @@
             {% endif %}
           </td>
           <td>
+            {% if row.source == 'maintenance_plan' %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('devices.device_detail', device_id=row.device_id) }}?tab=maintenance">维护计划</a>
+            {% else %}
             <a class="btn btn-sm btn-outline-primary" href="{{ url_for('documents.document_history', doc_id=row.doc_id) }}">版本历史</a>
+            {% endif %}
             <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('devices.device_detail', device_id=row.device_id) }}">设备详情</a>
           </td>
         </tr>
