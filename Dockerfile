@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
-#
 # DMS 运行时镜像：只跑 gunicorn，不装 nginx / 数据库。
 # 生产拓扑（阿里云 101.201.48.64）：
 #   宿主机 nginx (443/80) -> 127.0.0.1:5000（本容器, network_mode: host）
