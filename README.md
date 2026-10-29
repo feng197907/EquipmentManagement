@@ -94,56 +94,45 @@ pip install -r requirements.txt
 python app.py
 ```
 
-### Docker Compose 一键启动
+### Docker Compose 部署（生产用这套）
 
-如果你想让别人 3 分钟内看到界面，直接用 Docker Compose：
+应用跑在容器里，MariaDB 和 nginx 留在宿主机。容器用 `network_mode: host` 直接复用宿主机网络栈，所以：
+
+- 容器看到的 `127.0.0.1:3306` 就是宿主机的 MariaDB
+- nginx 的 `proxy_pass http://127.0.0.1:5000` 不用改
+- MariaDB 可以安全地 bind 到 `127.0.0.1`，不再对公网开放 3306
+
+首次部署：
 
 ```bash
-启动服务
-docker compose up --build -d
+cp .env.example .env
+vi .env                      # 填 MYSQL_PASSWORD 和 SECRET_KEY
 
-停止服务
-docker compose down
+docker compose up -d --build
+docker compose ps            # 等 STATUS 出现 (healthy)
 ```
 
-启动完成后访问 `http://localhost:5000`。
-
-停止服务：
+日常发布：
 
 ```bash
-docker compose down
-```
-
-默认使用 SQLite，数据会落在本地 `data/` 目录里，上传文件在 `uploads/`，日志在 `logs/`。
-现在 `uploads` 和 `logs` 已改为 Docker named volumes，容器重建不会丢失 `/app/uploads/device_1` 和 `/app/logs/app.log`。
-
-### Docker 下切换 MySQL
-
-
-推荐把密码改成 `.env` 变量，不要明文写在 Compose 文件中：
-
-```bash
-cp .env.mysql.example .env
-# 编辑 .env，填入真实密码
-
-echo "🚀 启动服务..."
-docker compose -f docker-compose-mysql.yml -f docker-compose-mysql.override.yml up --build -d
-
-echo "🚀 停止服务..."
-docker compose -f docker-compose-mysql.yml -f docker-compose-mysql.override.yml down
-
-echo "📦 拉取最新代码..."
 git pull origin main
-
-echo "🔨 重新构建并启动..."
-docker compose -f docker-compose-mysql.yml -f docker-compose-mysql.override.yml up --build -d
-
-echo "📜 查看日志..."
-docker compose logs -f
-
-echo "📜 进入项目容器..."
-docker exec -it equipment-management /bin/bash
+docker compose up -d --build     # 重建镜像并替换容器，秒级切换
 ```
+
+运维命令：
+
+```bash
+docker compose logs -f app                  # 跟日志
+docker compose restart app                  # 只重启应用
+docker compose exec app sh                  # 进容器
+docker compose down                         # 停掉
+```
+
+上传文件和日志挂的是宿主机目录 `./uploads` 和 `./logs`，容器删了重建数据不丢，备份直接 `tar czf` 这两个目录即可。
+
+镜像自带健康检查，打的是应用自己的 `/healthz`——它会真的查一次数据库，所以 `unhealthy` 表示"进程活着但库连不上"，比只看进程有意义。
+
+> 旧的 `docker-compose-mysql.yml` + `.override.yml` 组合是「连数据库一起容器化」的独立跑法，本地开发想一键起 MySQL 时仍可用；生产不要用那套，会和宿主机的 MariaDB 抢 3306。
 
 ### 访问系统
 

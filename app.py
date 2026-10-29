@@ -144,6 +144,26 @@ def create_app():
             MENU_PERMISSIONS=MENU_PERMISSIONS,
         )
 
+    @app.route("/healthz")
+    def healthz():
+        """容器健康检查。
+
+        故意不只看进程活着——进程活着但数据库连不上，这个系统对外就是坏的。
+        真查一次库，连不上返回 503，让 docker 的 healthcheck 能反映出真实状态。
+        """
+        from flask import jsonify
+
+        try:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute("SELECT 1 AS ok")
+            cur.fetchone()
+            conn.close()
+        except Exception as exc:
+            return jsonify(status="degraded", db=type(exc).__name__), 503
+
+        return jsonify(status="ok"), 200
+
     return app
 
 

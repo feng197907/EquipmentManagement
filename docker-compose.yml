@@ -1,23 +1,50 @@
+# DMS 生产部署：应用跑在容器里，MariaDB 和 nginx 留在宿主机。
+#
+# 拓扑：
+#   公网 -> 宿主机 nginx :80/:443 -> 127.0.0.1:5000（dms-app 容器）
+#   dms-app -> 127.0.0.1:3306（宿主机 MariaDB）
+#
+# 为什么用 network_mode: host
+#   容器直接用宿主机网络栈，于是它看到的 127.0.0.1 就是宿主机的 127.0.0.1。
+#   这样 MariaDB 可以安心 bind 到 127.0.0.1（不再对公网开放 3306），
+#   nginx 的 proxy_pass http://127.0.0.1:5000 也一个字都不用改。
+#   缺点是容器不再有独立网络命名空间，只适合这种单机单应用场景；
+#   将来要把数据库也容器化时，改回 bridge 网络 + 服务名互相访问。
+#
+# 用法：
+#   cp .env.example .env && vi .env      # 首次
+#   docker compose up -d --build         # 发布 / 更新
+#   docker compose logs -f app           # 看日志
+#   docker compose down                  # 停
+
 services:
   app:
     build:
       context: .
-    container_name: equipment-management
-    ports:
-      - "5000:5000"
+    image: equipment-management:latest
+    container_name: dms-app
+
+    # 与宿主机共用网络栈，见文件头说明
+    network_mode: host
+
+    # 所有密钥和连接参数都从 .env 读，不进版本库
+    env_file:
+      - .env
+
     environment:
-      DB_TYPE: sqlite
-      DB_PATH: /data/equipment.db
-      SECRET_KEY: change-me-in-production
-      PORT: 5000
       TZ: Asia/Shanghai
+
     volumes:
-      - equipment-data:/data
-      - equipment-uploads:/app/uploads
-      - equipment-logs:/app/logs
+      # 上传件和日志放到宿主机目录，方便直接备份（tar 一下就行），
+      # 容器删了重建数据也不丢
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+
     restart: unless-stopped
 
-volumes:
-  equipment-data:
-  equipment-uploads:
-  equipment-logs:
+    # 容器日志别无限涨，撑爆磁盘会连带数据库一起完蛋
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
