@@ -2,20 +2,12 @@
 {% block content %}
 <div class="page-container">
   <!-- 页面标题 -->
-  <div class="page-hero">
-    <div>
-      <h1 class="page-hero-title">
-        <i data-lucide="search"></i>
-        搜索结果
-      </h1>
-      <p class="page-hero-subtitle">
-        {% if query %}
-          关键词 "<strong>{{ query }}</strong>" 的搜索结果 (共 {{ total }} 条)
-        {% else %}
-          请输入搜索关键词
-        {% endif %}
-      </p>
+  <div class="page-head">
+    <div class="page-head-main">
+      <h1 class="page-head-title">搜索结果</h1>
     </div>
+    <hr class="page-head-divider">
+    <p class="page-head-description">{% if query %} 关键词 "<strong>{{ query }}</strong>" 的搜索结果 (共 {{ total }} 条) {% else %} 请输入搜索关键词 {% endif %}</p>
   </div>
 
   <!-- 搜索表单 -->

@@ -1,17 +1,11 @@
 /* =============================================
    登录页样式 (login.html)
    ============================================= */
-:root {
-  --color-primary: #2563EB;
-  --color-primary-hover: #1D4ED8;
-  --color-primary-light: #DBEAFE;
-  --text-primary: #1E293B;
-  --text-secondary: #64748B;
-  --border-color: #E2E8F0;
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --border-radius: 12px;
-  --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-}
+/* [Phase1 §8.2] 原此处有一份 :root 令牌重定义（--color-primary / --text-secondary
+   / --border-radius:12px / --shadow-lg …），与 variables.css 冲突且把
+   --text-secondary 降回 #64748B（4.76:1，本应是 #475569 的 7.58:1）。
+   已全部删除，登录页与全站共用唯一令牌源。
+   规格：卡片 8px 圆角、控件 44px 高（§5.4 大尺寸）、标题 32px（§4.2）。 */
 
 * {
   box-sizing: border-box;
@@ -21,7 +15,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
-  background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+  background: #1E293B;   /* [Phase1 §2.2] 页面背景禁止渐变，改单一深中性 */
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -30,19 +24,21 @@ body {
 
 .login-container {
   width: 100%;
-  max-width: 420px;
-  padding: 1.5rem;
+  /* 480px：内宽 416px，32px 中文标题 12 字可在单行排下，避免「系统」被折行 */
+  max-width: 480px;
+  padding: var(--space-6);
 }
 
 .login-card {
-  background: #fff;
-  border-radius: var(--border-radius);
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
 
 .login-header {
-  padding: 2rem 2rem 0;
+  padding: var(--space-8) var(--space-8) 0;
   text-align: center;
 }
 
@@ -52,85 +48,88 @@ body {
   justify-content: center;
   width: 64px;
   height: 64px;
-  background: var(--color-primary-light);
-  border-radius: 16px;
-  margin-bottom: 1.5rem;
+  background: var(--color-primary-bg);
+  border-radius: var(--radius-md);   /* 图标块 6px（§6.1，原 16px 过大） */
+  margin-bottom: var(--space-6);
 }
 
 .login-logo svg {
-  width: 32px;
-  height: 32px;
+  width: var(--text-3xl);
+  height: var(--text-3xl);
   color: var(--color-primary);
 }
 
 .login-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--text-3xl);        /* 32px 封面主标题（§4.2） */
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
   color: var(--text-primary);
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
+  letter-spacing: 0;
 }
 
 .login-subtitle {
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
   margin: 0;
 }
 
 .login-body {
-  padding: 2rem;
+  padding: var(--space-8);
 }
 
 .form-group {
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--space-5);
 }
 
 .form-label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
 }
 
 .form-label.required::after {
   content: " *";
-  color: #EF4444;
+  color: var(--color-danger-fill);
 }
 
 .form-control {
   width: 100%;
-  height: 48px;
-  padding: 0 1rem;
-  font-size: 1rem;
+  height: var(--control-height-lg);   /* 44px，登录页用大尺寸（§5.4） */
+  padding: 0 var(--control-padding-x);
   font-family: var(--font-sans);
+  font-size: var(--text-base);
   color: var(--text-primary);
-  background: #fff;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  transition: all 0.15s ease;
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .form-control:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .form-control::placeholder {
-  color: #94A3B8;
+  color: var(--text-placeholder);
 }
 
 .btn-login {
   width: 100%;
-  height: 48px;
+  height: var(--control-height-lg);
   background: var(--color-primary);
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 600;
+  color: var(--text-inverse);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background-color var(--transition-fast);
 }
 
 .btn-login:hover {
@@ -138,40 +137,42 @@ body {
 }
 
 .btn-login:active {
-  transform: scale(0.98);
+  background: var(--color-primary-active);
 }
 
 .alert {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  margin-bottom: 1.5rem;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-6);
+  font-size: var(--text-sm);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-md);
 }
 
 .alert-danger {
-  background: #FEE2E2;
-  color: #991B1B;
+  color: var(--color-danger-text);
+  background: var(--color-danger-bg);
 }
 
 .login-footer {
-  padding: 1.5rem 2rem;
-  background: #F8FAFC;
-  border-top: 1px solid var(--border-color);
+  padding: var(--space-6) var(--space-8);
+  background: var(--bg-inset);
+  border-top: var(--border-width) solid var(--border-color);
   text-align: center;
 }
 
 .login-footer p {
   margin: 0;
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
 }
 
 .login-footer code {
-  background: #E2E8F0;
-  padding: 0.125rem 0.375rem;
-  border-radius: 4px;
-  font-family: "JetBrains Mono", monospace;
+  padding: 1px var(--space-1);
+  background: var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
 }

@@ -12,7 +12,10 @@
   <link href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}" rel="stylesheet">
 
   <!-- Custom Styles -->
-  <link href="{{ url_for('static', filename='css/login.css') }}" rel="stylesheet">
+  {# 令牌源必须先于页面样式：login.css 已改为纯令牌取值，不再自带 :root #}
+  <link href="{{ url_for('static', filename='css/variables.css') }}?v=3" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/base.css') }}?v=3" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/login.css') }}?v=3" rel="stylesheet">
 </head>
 <body>
   <div class="login-container">

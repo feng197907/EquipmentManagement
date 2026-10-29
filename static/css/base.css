@@ -5,8 +5,11 @@
   box-sizing: border-box;
 }
 
+/* 根字号恢复 16px —— Bootstrap 5 全部尺寸按 16px 基准设计，
+   此前设为 14px 把整站压到 87.5%，是「字小 / 控件矮 / 留白显大」的总根源（S3）。
+   见 phase1 §4.3。自定义布局尺寸已改为 px 令牌，不再受根字号影响。 */
 html {
-  font-size: 14px;
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -15,28 +18,41 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
-  font-size: var(--text-base);
-  line-height: 1.5;
+  font-size: var(--text-base);       /* 15px */
+  line-height: var(--leading-relaxed); /* 1.6 —— 中文行高下限 */
+  font-weight: var(--weight-regular);  /* 中文禁用 300 */
+  letter-spacing: 0;                   /* 中文禁止加字距 */
   color: var(--text-primary);
   background-color: var(--bg-page);
   overflow-x: hidden;
+  font-variant-numeric: tabular-nums;  /* 数字等宽，表格列不抖动 */
 }
 
-/* Typography */
+/* Typography —— 中文最大字重 600（YaHei Bold 在 14px 会横向挤压） */
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
-  font-weight: 600;
-  line-height: 1.3;
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
   color: var(--text-primary);
+  letter-spacing: 0;
 }
 
-h1 { font-size: var(--text-2xl); }
-h2 { font-size: var(--text-xl); }
-h3 { font-size: var(--text-lg); }
+h1 { font-size: var(--text-xl); }    /* 20px 页面标题 */
+h2 { font-size: var(--text-lg); }    /* 17px 区块标题 */
+h3 { font-size: var(--text-base); }  /* 15px 小节标题 */
 h4 { font-size: var(--text-base); }
 
 p {
   margin: 0 0 1rem;
+  line-height: var(--leading-relaxed);
+}
+
+/* 表格 / 数字列：等宽数字 + 右对齐（phase1 §5.3） */
+table,
+.tabular-nums,
+.stat-value,
+.text-numeric {
+  font-variant-numeric: tabular-nums;
 }
 
 a {
@@ -49,51 +65,11 @@ a:hover {
   color: var(--color-primary-hover);
 }
 
-/* 按钮内的链接颜色保持白色 */
-a.btn,
-a.btn:hover,
-a.btn-primary,
-a.btn-primary:hover,
-a.btn-success,
-a.btn-success:hover,
-a.btn-danger,
-a.btn-danger:hover,
-a.btn-warning,
-a.btn-warning:hover {
-  color: #fff;
+/* 链接按钮的颜色一律交给 components.css 的 .btn-* 各自定义。
+   此处不再对 a.btn 做任何颜色覆写——旧规则特异性 (0,1,1) 会压过
+   .btn-secondary 的 (0,1,0)，把 <a class="btn btn-secondary"> 刷成白字白底。 */
+a.btn {
   text-decoration: none;
-}
-
-a.btn span,
-a.btn-primary span,
-a.btn-success span,
-a.btn-danger span,
-a.btn-warning span {
-  color: inherit !important;
-}
-
-a.btn-outline-primary {
-  color: var(--color-primary);
-}
-
-a.btn-outline-primary:hover {
-  color: #fff;
-}
-
-a.btn-outline-primary span {
-  color: inherit !important;
-}
-
-a.btn-outline-secondary {
-  color: var(--text-secondary);
-}
-
-a.btn-outline-secondary:hover {
-  color: var(--text-primary);
-}
-
-a.btn-outline-secondary span {
-  color: inherit !important;
 }
 
 /* Focus Styles */
@@ -130,17 +106,21 @@ a.btn-outline-secondary span {
 /* Utility Classes */
 .text-primary { color: var(--text-primary) !important; }
 .text-secondary { color: var(--text-secondary) !important; }
-.text-muted { color: var(--text-muted) !important; }
+.text-tertiary { color: var(--text-tertiary) !important; }
+/* 旧名兼容：--text-muted 已拆为 tertiary / placeholder，此处指向可读的 tertiary
+   （原 #94A3B8 在白底仅 2.56:1，不合格，见 S9） */
+.text-muted { color: var(--text-tertiary) !important; }
 
 .bg-primary { background-color: var(--color-primary) !important; }
-.bg-success { background-color: var(--color-success) !important; }
-.bg-warning { background-color: var(--color-warning) !important; }
-.bg-danger { background-color: var(--color-danger) !important; }
-.bg-info { background-color: var(--color-info) !important; }
+.bg-success { background-color: var(--color-success-fill) !important; }
+.bg-warning { background-color: var(--color-warning-fill) !important; }
+.bg-danger { background-color: var(--color-danger-fill) !important; }
+.bg-info { background-color: var(--color-info-fill) !important; }
 
-.fw-medium { font-weight: 500; }
-.fw-semibold { font-weight: 600; }
-.fw-bold { font-weight: 700; }
+.fw-medium { font-weight: var(--weight-medium); }
+.fw-semibold { font-weight: var(--weight-semibold); }
+/* 中文最大字重 600 —— .fw-bold 保留但收敛到 600（phase1 §4.1） */
+.fw-bold { font-weight: var(--weight-semibold); }
 
 /* Display */
 .d-flex { display: flex !important; }

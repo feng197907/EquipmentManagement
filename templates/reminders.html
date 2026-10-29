@@ -1,52 +1,42 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-  <div>
-    <h3 class="mb-1">提醒中心</h3>
-    <div class="text-muted">校准文档 · 维护计划到期提醒{% if borrowing_enabled %} · 待审批与借阅状态概览{% endif %}</div>
+<div class="page-head is-board">
+  <div class="page-head-main">
+    <h1 class="page-head-title">提醒中心</h1>
+    <div class="page-head-actions">
+      <a class="btn btn-outline-secondary" href="{{ url_for('documents.document_search') }}">文档检索</a>
+      <a class="btn btn-primary" href="{{ url_for('dashboard.user_stories') }}">用户故事中心</a>
+    </div>
   </div>
-  <div class="btn-group">
-    <a class="btn btn-outline-primary" href="{{ url_for('dashboard.user_stories') }}">用户故事中心</a>
-    <a class="btn btn-outline-secondary" href="{{ url_for('documents.document_search') }}">文档检索</a>
-  </div>
+  <p class="page-head-description">校准文档 · 维护计划到期提醒{% if borrowing_enabled %} · 待审批与借阅状态概览{% endif %}</p>
 </div>
 
-{# 概览卡片 #}
-<div class="row g-3 mb-4">
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="text-muted small">待审批</div>
-        <div class="fs-3 fw-bold">{{ pending_approvals }}</div>
-      </div>
+{# 概览卡片：统一 .stat-card 版式（数值 26px 上、标签 12px 下） #}
+<div class="stat-grid mb-4">
+  <div class="stat-card">
+    <div class="stat-content">
+      <div class="stat-value">{{ pending_approvals }}</div>
+      <div class="stat-label">待审批</div>
     </div>
   </div>
   {% if borrowing_enabled %}
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="text-muted small">借阅中</div>
-        <div class="fs-3 fw-bold">{{ borrowed_total }}</div>
-      </div>
+  <div class="stat-card">
+    <div class="stat-content">
+      <div class="stat-value">{{ borrowed_total }}</div>
+      <div class="stat-label">借阅中</div>
     </div>
   </div>
   {% endif %}
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="text-muted small">校准已逾期</div>
-        <div class="fs-3 fw-bold {% if severity_counts.danger > 0 %}text-danger{% endif %}">{{ severity_counts.danger }}</div>
-      </div>
+  <div class="stat-card">
+    <div class="stat-content">
+      <div class="stat-value">{{ severity_counts.danger }}</div>
+      <div class="stat-label">校准已逾期</div>
     </div>
   </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="text-muted small">维护逾期 / 今日到期</div>
-        <div class="fs-3 fw-bold {% if (maintenance_summary.overdue_count + maintenance_summary.due_today_count) > 0 %}text-danger{% endif %}">
-          {{ maintenance_summary.overdue_count + maintenance_summary.due_today_count }}
-        </div>
-      </div>
+  <div class="stat-card">
+    <div class="stat-content">
+      <div class="stat-value">{{ maintenance_summary.overdue_count + maintenance_summary.due_today_count }}</div>
+      <div class="stat-label">维护逾期 / 今日到期</div>
     </div>
   </div>
 </div>
@@ -122,30 +112,23 @@
             <div class="d-flex align-items-center gap-1">
               <span>{{ row.doc_name }}</span>
               {% if row.has_explicit_due %}
-              <span class="badge badge-info" style="font-size:10px;">精确</span>
+              <span class="micro-tag">精确</span>
               {% endif %}
               {% if row.source == 'maintenance_plan' %}
-              <span class="badge badge-secondary" style="font-size:10px;">计划</span>
+              <span class="micro-tag">计划</span>
               {% endif %}
             </div>
           </td>
           <td>v{{ row.version }}</td>
-          <td>
-            {% if row.severity == 'danger' %}
-              <span class="text-danger fw-bold">{{ row.due_date }}</span>
-            {% elif row.severity == 'warning' %}
-              <span class="text-warning fw-bold">{{ row.due_date }}</span>
-            {% else %}
-              <span>{{ row.due_date }}</span>
-            {% endif %}
-          </td>
+          {# 日期永远用 --text-primary 常规字重，告警只出现在「状态」列（§3.4-D 硬规则） #}
+          <td><span class="tabular-nums">{{ row.due_date }}</span></td>
           <td>
             {% if row.days_left < 0 %}
-              <span class="text-danger">已逾期 {{ row.days_left|abs }} 天</span>
+              <span class="tabular-nums">已逾期 {{ row.days_left|abs }} 天</span>
             {% elif row.days_left == 0 %}
-              <span class="text-warning fw-bold">今日到期</span>
+              <span>今日到期</span>
             {% else %}
-              {{ row.days_left }} 天
+              <span class="tabular-nums">{{ row.days_left }} 天</span>
             {% endif %}
           </td>
           <td>
@@ -216,15 +199,8 @@
           <td><span class="font-monospace">{{ item.device_code }}</span></td>
           <td>{{ item.device_name }}</td>
           <td>{{ item.maintenance_type_label or item.maintenance_type }}</td>
-          <td>
-            {% if item.overdue_days < 0 %}
-              <span class="text-danger fw-bold">{{ item.due_date_str }}</span>
-            {% elif item.due_date_str == today_str %}
-              <span class="text-warning fw-bold">{{ item.due_date_str }}</span>
-            {% else %}
-              <span>{{ item.due_date_str }}</span>
-            {% endif %}
-          </td>
+          {# 同上：日期不加色，语义只由「状态」列承载 #}
+          <td><span class="tabular-nums">{{ item.due_date_str }}</span></td>
           <td>
             {% if item.overdue_days < 0 %}
               <span class="badge badge-danger">已逾期 {{ item.overdue_days|abs }} 天</span>

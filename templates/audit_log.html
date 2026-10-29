@@ -1,7 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
 {# 审计日志列表，管理员只读查看 #}
-<h3 class="mb-3">审计日志</h3>
+<div class="page-head">
+  <div class="page-head-main">
+    <h1 class="page-head-title">审计日志</h1>
+  </div>
+  <hr class="page-head-divider">
+  <p class="page-head-description">系统全部关键操作留痕，供 GMP 审计追溯，只读</p>
+</div>
 <div class="card shadow-sm">
   <div class="table-responsive">
     <table class="table table-hover mb-0">
@@ -24,7 +30,7 @@
         {% for row in rows %}
         <tr>
           <td>{{ row.user }}</td>
-          <td>{{ row.log_time }}</td>
+          <td class="col-date">{{ row.log_time }}</td>
           <td>{{ row.action }}</td>
           <td>{{ row.target_type }}</td>
           <td>{{ row.target_id or '-' }}</td>
@@ -35,7 +41,17 @@
           <td>{{ row.ip_address or '-' }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="10" class="text-center text-muted py-4">暂无日志</td></tr>
+<tr>
+            <td colspan="10">
+              <div class="empty-state">
+                <div class="empty-state-icon">
+                  <i data-lucide="scroll-text"></i>
+                </div>
+                <h4 class="empty-state-title">暂无日志</h4>
+                <p class="empty-state-description">当前筛选条件下没有审计记录</p>
+              </div>
+            </td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>

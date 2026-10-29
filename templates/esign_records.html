@@ -70,11 +70,12 @@ document.addEventListener('DOMContentLoaded', function() {
 {% endblock %}
 {% block content %}
 {# 电子签名审计追踪页面 - 21 CFR Part 11 合规 #}
-<div class="d-flex align-items-center justify-content-between mb-3">
-  <h3 class="mb-0">
-    <i data-lucide="pen-tool" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;"></i>
-    电子签名审计追踪
-  </h3>
+<div class="page-head">
+  <div class="page-head-main">
+    <h1 class="page-head-title">电子签名审计追踪</h1>
+  </div>
+  <hr class="page-head-divider">
+  <p class="page-head-description">按 21 CFR Part 11 要求记录全部电子签名事件，只读留档</p>
 </div>
 
 {# 筛选栏 #}
@@ -150,9 +151,17 @@ document.addEventListener('DOMContentLoaded', function() {
           <td><small>{{ record.remark or '-' }}</small></td>
         </tr>
         {% else %}
-        <tr>
-          <td colspan="8" class="text-center text-muted py-4">暂无签名记录</td>
-        </tr>
+<tr>
+            <td colspan="8">
+              <div class="empty-state">
+                <div class="empty-state-icon">
+                  <i data-lucide="pen-tool"></i>
+                </div>
+                <h4 class="empty-state-title">暂无签名记录</h4>
+                <p class="empty-state-description">当前筛选条件下没有电子签名事件</p>
+              </div>
+            </td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>

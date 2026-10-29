@@ -4,27 +4,25 @@
 <div class="page-container">
 
   {# 页面标题区 #}
-  <div class="page-hero" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%);">
-    <div>
-      <h1 class="page-hero-title">
-        <i data-lucide="bookmark"></i>
-        借阅记录
-      </h1>
-      <p class="page-hero-subtitle">管理文档借阅和归还流程</p>
+  <div class="page-head">
+    <div class="page-head-main">
+      <h1 class="page-head-title">借阅记录</h1>
+      <div class="page-head-actions">
+        <a href="{{ url_for('borrowing.borrow_list') }}?filter=active" class="btn btn-outline-secondary">
+          <i data-lucide="filter"></i>
+          仅看借出
+        </a>
+      </div>
     </div>
-    <div class="page-hero-actions">
-      <a href="{{ url_for('borrowing.borrow_list') }}?filter=active" class="btn btn-outline-light">
-        <i data-lucide="filter"></i>
-        仅看借出
-      </a>
-    </div>
+    <hr class="page-head-divider">
+    <p class="page-head-description">管理文档借阅和归还流程</p>
   </div>
 
   {# 统计概览 #}
   <div class="stats-overview">
     <div class="stat-mini-card">
-      <div class="stat-mini-icon" style="background: var(--color-primary-light);">
-        <i data-lucide="list" style="color: var(--color-primary);"></i>
+      <div class="stat-mini-icon">
+        <i data-lucide="list"></i>
       </div>
       <div class="stat-mini-content">
         <div class="stat-mini-value">{{ rows|length if rows else 0 }}</div>
@@ -32,8 +30,8 @@
       </div>
     </div>
     <div class="stat-mini-card">
-      <div class="stat-mini-icon" style="background: var(--color-warning-light);">
-        <i data-lucide="clock" style="color: var(--color-warning);"></i>
+      <div class="stat-mini-icon">
+        <i data-lucide="clock"></i>
       </div>
       <div class="stat-mini-content">
         <div class="stat-mini-value">{{ rows|selectattr('status', 'equalto', 'borrowed')|list|length if rows else 0 }}</div>
@@ -41,8 +39,8 @@
       </div>
     </div>
     <div class="stat-mini-card">
-      <div class="stat-mini-icon" style="background: var(--color-success-light);">
-        <i data-lucide="check-circle" style="color: var(--color-success);"></i>
+      <div class="stat-mini-icon">
+        <i data-lucide="check-circle"></i>
       </div>
       <div class="stat-mini-content">
         <div class="stat-mini-value">{{ rows|selectattr('status', 'equalto', 'returned')|list|length if rows else 0 }}</div>

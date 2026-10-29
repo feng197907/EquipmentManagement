@@ -22,34 +22,32 @@
 </style>
 {% endblock %}
 {% block content %}
-<div class="page-hero">
-  <div>
-    <h1 class="page-hero-title">
-      <i data-lucide="package"></i>
-      备件库存管理
-    </h1>
-    <p class="page-hero-subtitle">管理备件入库、消耗与库存预警</p>
+<div class="page-head">
+  <div class="page-head-main">
+    <h1 class="page-head-title">备件库存管理</h1>
+    <div class="page-head-actions">
+      <a href="{{ url_for('spare_part.spare_part_stats') }}" class="btn btn-outline-secondary">
+        <i data-lucide="bar-chart-3"></i> 成本统计
+      </a>
+      <a href="{{ url_for('spare_part.alert_list') }}" class="btn btn-outline-secondary position-relative">
+        <i data-lucide="alert-triangle"></i> 预警中心
+        {% if alert_count > 0 %}<span class="badge bg-danger ms-1">{{ alert_count }}</span>{% endif %}
+      </a>
+      <a href="{{ url_for('spare_part.inbound_list') }}" class="btn btn-outline-secondary">
+        <i data-lucide="package-plus"></i> 入库记录
+      </a>
+      <a href="{{ url_for('spare_part.consumption_list') }}" class="btn btn-outline-secondary">
+        <i data-lucide="package-minus"></i> 消耗记录
+      </a>
+      {% if current_user.is_authenticated and current_user.has_permission('device_maintenance') %}
+      <button class="btn btn-primary" onclick="showAddPartModal()">
+        <i data-lucide="plus"></i> 新增备件
+      </button>
+      {% endif %}
+    </div>
   </div>
-  <div class="page-hero-actions">
-    <a href="{{ url_for('spare_part.spare_part_stats') }}" class="btn btn-outline">
-      <i data-lucide="bar-chart-3"></i> 成本统计
-    </a>
-    <a href="{{ url_for('spare_part.alert_list') }}" class="btn btn-outline position-relative">
-      <i data-lucide="alert-triangle"></i> 预警中心
-      {% if alert_count > 0 %}<span class="badge bg-danger ms-1">{{ alert_count }}</span>{% endif %}
-    </a>
-    <a href="{{ url_for('spare_part.inbound_list') }}" class="btn btn-outline">
-      <i data-lucide="package-plus"></i> 入库记录
-    </a>
-    <a href="{{ url_for('spare_part.consumption_list') }}" class="btn btn-outline">
-      <i data-lucide="package-minus"></i> 消耗记录
-    </a>
-    {% if current_user.is_authenticated and current_user.has_permission('device_maintenance') %}
-    <button class="btn btn-success" onclick="showAddPartModal()">
-      <i data-lucide="plus"></i> 新增备件
-    </button>
-    {% endif %}
-  </div>
+  <hr class="page-head-divider">
+  <p class="page-head-description">管理备件入库、消耗与库存预警</p>
 </div>
 
 {# 筛选栏 #}
@@ -162,10 +160,18 @@
       </tbody>
     </table>
     {% else %}
-    <div class="text-center text-muted p-4">
-      <p>暂无备件记录</p>
+    {# 空状态统一版式（§5.6）：图标圆 96px + 标题 + 说明 + 唯一主行动，垂直居中 #}
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <i data-lucide="package"></i>
+      </div>
+      <h4 class="empty-state-title">暂无备件记录</h4>
+      <p class="empty-state-description">还没有登记任何备件，新增后可跟踪入库、消耗与库存预警</p>
       {% if current_user.is_authenticated and current_user.has_permission('device_maintenance') %}
-      <button class="btn btn-primary" onclick="showAddPartModal()">新增备件</button>
+      <button class="btn btn-primary" onclick="showAddPartModal()">
+        <i data-lucide="plus"></i>
+        新增备件
+      </button>
       {% endif %}
     </div>
     {% endif %}

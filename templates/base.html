@@ -15,13 +15,13 @@
   <script src="{{ url_for('static', filename='vendor/lucide.min.js') }}"></script>
 
   <!-- Custom Styles -->
-  <link href="{{ url_for('static', filename='css/variables.css') }}?v=2" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/base.css') }}?v=2" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/layout.css') }}?v=2" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/components.css') }}?v=2" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/pages.css') }}?v=2" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/pages-enhanced.css') }}?v=2" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/mobile.css') }}?v=1" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/variables.css') }}?v=4" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/base.css') }}?v=4" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/layout.css') }}?v=4" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/components.css') }}?v=4" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/pages.css') }}?v=4" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/pages-enhanced.css') }}?v=4" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/mobile.css') }}?v=4" rel="stylesheet">
   {% block head %}{% endblock %}
 </head>
 <body data-user-is-admin="{{ 'true' if current_user.is_authenticated and current_user.is_admin else 'false' }}">
@@ -46,10 +46,8 @@
           <i data-lucide="layout-dashboard"></i>
           <span>设备看板</span>
         </a>
-        <a href="{{ url_for('documents.document_search') }}" class="nav-item {% if request.endpoint == 'documents.document_search' %}active{% endif %}">
-          <i data-lucide="search"></i>
-          <span>文档检索</span>
-        </a>
+        {# 「文档检索」与「文档中心 › 全部文档」指向同一个页面，两者会同时高亮。
+           这里只保留文档中心那一条，避免一个页面出现两个激活项。 #}
         {% if borrowing_enabled %}
         <a href="{{ url_for('borrowing.borrow_list') }}" class="nav-item {% if request.endpoint == 'borrowing.borrow_list' %}active{% endif %}">
           <i data-lucide="bookmark"></i>
@@ -98,7 +96,7 @@
       {% if current_user.is_authenticated and current_user.has_menu_permission('document_center') %}
       <div class="nav-group">
         <div class="nav-group-title">文档中心</div>
-        <a href="{{ url_for('documents.document_search') }}" class="nav-item {% if 'document' in request.endpoint %}active{% endif %}">
+        <a href="{{ url_for('documents.document_search') }}" class="nav-item {% if request.endpoint == 'documents.document_search' %}active{% endif %}">
           <i data-lucide="file-text"></i>
           <span>全部文档</span>
         </a>
@@ -302,20 +300,20 @@
         <button class="topbar-menu-btn" id="menuToggle" aria-label="打开菜单">
           <i data-lucide="menu"></i>
         </button>
+        {% if breadcrumb %}
         <div class="breadcrumb">
-          <span class="breadcrumb-item">首页</span>
-          {% if breadcrumb %}
+          <a class="breadcrumb-item" href="{{ url_for('dashboard.dashboard') }}">首页</a>
           <span class="breadcrumb-separator">/</span>
           <span class="breadcrumb-item active">{{ breadcrumb }}</span>
-          {% endif %}
         </div>
+        {% endif %}
       </div>
 
       <div class="topbar-center">
         <form class="global-search" action="{{ url_for('search.search_results') }}" method="get">
           <i data-lucide="search" class="search-icon"></i>
           <input type="text" name="q" placeholder="搜索设备、文档..." class="search-input" value="{{ request.args.get('q', '') }}">
-          <kbd class="search-shortcut">⌘K</kbd>
+          <kbd class="search-shortcut">Ctrl K</kbd>
         </form>
       </div>
 
@@ -390,6 +388,18 @@
 
       <!-- 页面主体 -->
       {% block content %}{% endblock %}
+
+      {# 页脚收口条：内容少的页面底部原本是一片惨白，没有任何视觉终止符。
+         这里给页面一个收尾 + 补上 GMP 审计常用的环境信息。 #}
+      <footer class="page-foot">
+        <span>{{ config.SYSTEM_NAME if config.SYSTEM_NAME else '设备档案文档管理系统' }}</span>
+        <span class="page-foot-sep">·</span>
+        <span>{{ current_user.username if current_user.is_authenticated else '未登录' }}</span>
+        {% if current_user.is_authenticated and current_user.role %}
+        <span class="page-foot-sep">·</span>
+        <span>角色 {{ current_user.role }}</span>
+        {% endif %}
+      </footer>
     </main>
   </div>
 
@@ -539,47 +549,42 @@
         var total = data.summary.due_today_count + data.summary.due_7days_count + data.summary.overdue_count;
         if (total === 0) return;
 
-        // 构建弹窗内容（居中遮罩、可滚动内容、锁定页面滚动）
-        var html = '<div class="modal-overlay" id="maintenanceReminderModal" style="display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9999;">';
-        html += '<div class="maintenance-reminder-modal" style="max-width:800px;width:95%;background:#fff;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);margin:0;overflow:auto;max-height:85vh;">';
-        html += '<div class="modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(0,0,0,0.06);">';
-        html += '<h3 class="modal-title" style="margin:0;font-size:1.125rem;">⚠️ 设备维护提醒</h3>';
-        html += '<button class="modal-close" onclick="closeMaintenanceReminder()" style="background:transparent;border:0;font-size:1.25rem;line-height:1;">&times;</button>';
+        // 构建弹窗内容（标准 modal 结构 + Lucide 图标，纯 class 驱动，无内联样式）
+        // 依据 phase1 §8.1 / §10：删除全部 inline style 与 ⚠️🔴🟡 emoji，
+        // 分组标题用 .badge-status 表达语义，footer 只保留 1 主 + 1 次。
+        var html = '<div class="modal-overlay" id="maintenanceReminderModal">';
+        html += '<div class="modal is-wide" role="dialog" aria-modal="true" aria-labelledby="maintenanceReminderTitle">';
+        html += '<div class="modal-header">';
+        html += '<h3 class="modal-title" id="maintenanceReminderTitle">设备维护提醒</h3>';
+        html += '<button type="button" class="modal-close" onclick="closeMaintenanceReminder()" aria-label="关闭">&times;</button>';
         html += '</div>';
-        html += '<div class="modal-body" style="padding:16px 20px;">';
+        html += '<div class="modal-body">';
 
-        if (data.overdue.length > 0) {
-          html += '<h5 class="text-danger mb-2">🔴 已逾期 (' + data.overdue.length + '台)</h5>';
-          html += '<ul class="list-group mb-3">';
-          data.overdue.forEach(function(item) {
-            html += '<li class="list-group-item"><a href="/device/' + item.device_id + '/maintenance?plan_id=' + item.plan_id + '" onclick="closeMaintenanceReminder()">' + item.device_code + ' ' + item.device_name + '</a> - ' + item.maintenance_type_label + '</li>';
+        function renderReminderGroup(title, items, variant) {
+          if (!items || items.length === 0) return '';
+          var out = '<div class="reminder-group">';
+          out += '<div class="reminder-group-head"><span class="badge-status is-' + variant + '">' + title + ' · ' + items.length + ' 台</span></div>';
+          out += '<ul class="reminder-list">';
+          items.forEach(function(item) {
+            out += '<li>';
+            out += '<a href="/device/' + item.device_id + '/maintenance?plan_id=' + item.plan_id + '" onclick="closeMaintenanceReminder()">';
+            out += item.device_code + ' ' + item.device_name + '</a>';
+            out += '<span class="reminder-type">' + item.maintenance_type_label + '</span>';
+            out += '</li>';
           });
-          html += '</ul>';
+          out += '</ul>';
+          out += '</div>';
+          return out;
         }
 
-        if (data.due_today.length > 0) {
-          html += '<h5 class="text-danger mb-2">🔴 今日到期 (' + data.due_today.length + '台)</h5>';
-          html += '<ul class="list-group mb-3">';
-          data.due_today.forEach(function(item) {
-            html += '<li class="list-group-item"><a href="/device/' + item.device_id + '/maintenance?plan_id=' + item.plan_id + '" onclick="closeMaintenanceReminder()">' + item.device_code + ' ' + item.device_name + '</a> - ' + item.maintenance_type_label + '</li>';
-          });
-          html += '</ul>';
-        }
-
-        if (data.due_within_7days.length > 0) {
-          html += '<h5 class="text-warning mb-2">🟡 7日内到期 (' + data.due_within_7days.length + '台)</h5>';
-          html += '<ul class="list-group mb-3">';
-          data.due_within_7days.forEach(function(item) {
-            html += '<li class="list-group-item"><a href="/device/' + item.device_id + '/maintenance?plan_id=' + item.plan_id + '" onclick="closeMaintenanceReminder()">' + item.device_code + ' ' + item.device_name + '</a> - ' + item.maintenance_type_label + '</li>';
-          });
-          html += '</ul>';
-        }
+        html += renderReminderGroup('已逾期', data.overdue, 'danger');
+        html += renderReminderGroup('今日到期', data.due_today, 'danger');
+        html += renderReminderGroup('7 日内到期', data.due_within_7days, 'warning');
 
         html += '</div>';
-        html += '<div class="modal-footer" style="display:flex;gap:8px;align-items:center;justify-content:flex-end;padding:12px 20px;border-top:1px solid rgba(0,0,0,0.04);">';
+        html += '<div class="modal-footer">';
+        html += '<button type="button" class="btn btn-secondary" onclick="snoozeMaintenanceReminder()">稍后提醒</button>';
         html += '<a class="btn btn-primary" href="/dashboard">查看详情</a>';
-        html += '<button class="btn btn-secondary" onclick="snoozeMaintenanceReminder()">稍后提醒</button>';
-        html += '<button class="btn btn-outline-secondary" onclick="closeMaintenanceReminder()">关闭</button>';
         html += '</div>';
         html += '</div>';
         html += '</div>';

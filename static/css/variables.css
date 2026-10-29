@@ -1,93 +1,238 @@
-/* DMS 设计系统 - CSS 变量 */
+/* ============================================================
+   DMS 设计系统 · 唯一令牌源  (v2.0)
+   规则：所有视觉数值必须来自本文件。页面级 CSS 禁止重新定义
+         --color-* / --text-* / --space-* / --radius-* / --shadow-*。
+   依据：_design/phase1-visual-direction.md §3.3 / §4.2 / §5 / §6 / §8.1
+   ============================================================ */
 :root {
-  /* 主色调 */
-  --color-primary: #2563EB;
-  --color-primary-hover: #1D4ED8;
-  --color-primary-light: #DBEAFE;
-  --color-primary-dark: #1E40AF;
+  /* ---------- 品牌主色 [修改] ---------- */
+  --color-primary:        #2563EB;
+  --color-primary-hover:  #1D4ED8;
+  --color-primary-active: #1E40AF;
+  --color-primary-bg:     #EFF6FF;   /* [改名] 原 --color-primary-light */
+  --color-primary-border: #BFDBFE;   /* [新增] */
 
-  /* 功能色 */
-  --color-success: #10B981;
-  --color-success-light: #D1FAE5;
-  --color-warning: #F59E0B;
-  --color-warning-light: #FEF3C7;
-  --color-danger: #EF4444;
-  --color-danger-light: #FEE2E2;
-  --color-info: #3B82F6;
-  --color-info-light: #DBEAFE;
+  /* ---------- 语义色 四档 [重构] ---------- */
+  /* success 正常 / 可用 / 已生效 */
+  --color-success-text:   #065F46;
+  --color-success-bg:     #D1FAE5;
+  --color-success-fill:   #047857;   /* [新增] 白字 5.48:1 */
+  --color-success-border: #A7F3D0;   /* [新增] */
 
-  /* 中性色 */
-  --color-gray-50: #F8FAFC;
+  /* warning 有时限 / 维护中 / 即将到期 */
+  --color-warning-text:   #92400E;
+  --color-warning-bg:     #FEF3C7;
+  --color-warning-fill:   #B45309;
+  --color-warning-border: #FDE68A;
+
+  /* danger 阻断 / 逾期 / 失效 / 拒绝 */
+  --color-danger-text:    #991B1B;
+  --color-danger-bg:      #FEE2E2;
+  --color-danger-fill:    #B91C1C;
+  --color-danger-border:  #FECACA;
+
+  /* info 流转 / 过渡 / 待审批 / 调试 */
+  --color-info-text:      #1E40AF;
+  --color-info-bg:        #DBEAFE;
+  --color-info-fill:      #1D4ED8;
+  --color-info-border:    #BFDBFE;
+
+  /* neutral 终态 / 空地 / 停用 / 报废 / 归档 */
+  --color-neutral-text:   #334155;
+  --color-neutral-bg:     #F1F5F9;
+  --color-neutral-fill:   #475569;
+  --color-neutral-border: #E2E8F0;
+
+  /* ---------- 中性色 Slate 单一系列 [保留] ---------- */
+  --color-gray-50:  #F8FAFC;
   --color-gray-100: #F1F5F9;
   --color-gray-200: #E2E8F0;
   --color-gray-300: #CBD5E1;
-  --color-gray-400: #94A3B8;
+  --color-gray-400: #94A3B8;   /* 仅图标 / placeholder，禁止正文 */
   --color-gray-500: #64748B;
   --color-gray-600: #475569;
   --color-gray-700: #334155;
   --color-gray-800: #1E293B;
   --color-gray-900: #0F172A;
 
-  /* 侧边栏 */
-  --sidebar-bg: #1E293B;
-  --sidebar-hover: #334155;
-  --sidebar-active: #3B82F6;
-  --sidebar-text: #E2E8F0;
-  --sidebar-text-muted: #94A3B8;
-  --sidebar-width: 260px;
+  /* ---------- 侧边栏 [修改] ---------- */
+  --sidebar-bg:         #1E293B;
+  --sidebar-hover:      #334155;
+  --sidebar-active:     #1D4ED8;   /* [改] 原 #3B82F6，白字仅 3.6:1 不合格 */
+  --sidebar-text:       #E2E8F0;   /* on #1E293B = 11.87:1 */
+  --sidebar-text-muted: #94A3B8;   /* on #1E293B = 5.71:1 */
+  --sidebar-width:          260px;
   --sidebar-width-collapsed: 72px;
+  --sidebar-border: #0F172A;       /* [新增] 代替阴影 */
 
-  /* 顶部栏 */
-  --topbar-bg: #FFFFFF;
+  /* ---------- 顶栏 [修改] ---------- */
+  --topbar-bg:     #FFFFFF;
   --topbar-height: 64px;
+  --topbar-border: #E2E8F0;        /* [新增] 代替阴影 */
 
-  /* 背景 */
-  --bg-page: #F8FAFC;
-  --bg-card: #FFFFFF;
+  /* ---------- 背景 ---------- */
+  --bg-page:        #F8FAFC;
+  --bg-card:        #FFFFFF;
+  --bg-subtle:      #F1F5F9;       /* [新增] 表头 / 图标块 / hover 行 */
+  --bg-inset:       #F8FAFC;       /* [新增] 只读区 / 斑马行 */
 
-  /* 文字 */
-  --text-primary: #1E293B;
-  --text-secondary: #64748B;
-  --text-muted: #94A3B8;
-  --text-disabled: #CBD5E1;
+  /* ---------- 文字 [重构] ---------- */
+  --text-primary:     #1E293B;     /* 14.63:1 */
+  --text-secondary:   #475569;     /* [改] 原 #64748B → 7.58:1 */
+  --text-tertiary:    #64748B;     /* [新增] 接管原 muted 职责，4.76:1 */
+  --text-placeholder: #94A3B8;     /* [改名] 仅 placeholder，禁止正文 */
+  --text-disabled:    #CBD5E1;
+  --text-inverse:     #FFFFFF;     /* [新增] */
 
-  /* 边框 */
-  --border-color: #E2E8F0;
-  --border-radius-sm: 6px;
-  --border-radius: 8px;
-  --border-radius-lg: 12px;
-  --border-radius-xl: 16px;
+  /* ---------- 边框 ---------- */
+  --border-color:        #E2E8F0;
+  --border-color-strong: #CBD5E1;   /* [新增] 卡片 hover / 禁用边框 */
+  --border-width:        1px;       /* [新增] */
 
-  /* 阴影 */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  /* ---------- 圆角 4 档 [重构] ---------- */
+  --radius-sm:   4px;    /* 徽章 / 微型标签 / 复选框 */
+  --radius-md:   6px;    /* 按钮 / 输入框 / 下拉 / 图标块 */
+  --radius-lg:   8px;    /* 卡片 / 弹窗 / 表格容器 */
+  --radius-full: 999px;  /* 头像 / 圆点 */
 
-  /* 过渡 */
-  --transition-fast: 0.15s ease;
-  --transition: 0.25s ease;
-  --transition-slow: 0.4s ease;
+  /* ---------- 阴影 3 档 [重构] ---------- */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.14);
+  --overlay-bg: rgba(15, 23, 42, 0.48);   /* [新增] 模态遮罩，改冷色 */
 
-  /* 字体 */
-  --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+  /* ---------- 间距 8pt [新增 · 此前被引用 45 次却从未定义] ---------- */
+  --space-0:  0px;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
 
-  /* 字号 */
-  --text-xs: 12px;
-  --text-sm: 13px;
-  --text-base: 14px;
-  --text-lg: 16px;
-  --text-xl: 20px;
-  --text-2xl: 24px;
-  --text-3xl: 30px;
+  /* ---------- 布局尺寸 [新增] 用 px 而非 rem，避免根字号改动引发连锁 ---------- */
+  --page-padding:        32px;
+  --page-padding-md:     24px;
+  --page-padding-sm:     16px;
+  --page-padding-xs:     12px;
+  --card-padding:        24px;
+  --card-padding-sm:     20px;
+  --card-header-height:  56px;
+  --stack-gap:           16px;   /* 同级卡片间距 */
+  --section-gap:         24px;   /* 区块间距 */
+  --footer-height:       40px;   /* 页面页脚条 */
 
-  /* z-index */
-  --z-sidebar: 100;
-  --z-topbar: 200;
+  /* ---------- 控件 ---------- */
+  --control-height:      36px;
+  --control-height-sm:   32px;
+  --control-height-lg:   44px;
+  --control-padding-x:   12px;
+  --btn-padding-x:       16px;
+  --table-cell-padding-y: 12px;
+  --table-cell-padding-x: 16px;
+  --table-head-padding-y: 10px;
+  --badge-height:        22px;
+  --badge-padding-x:     8px;
+  --icon-sm:             16px;
+  --icon-md:             20px;
+  --icon-lg:             40px;
+  --icon-block:          40px;   /* 统计卡图标块 */
+
+  /* ---------- 过渡 ---------- */
+  --transition-fast: 120ms ease-out;
+  --transition:      180ms ease-out;
+
+  /* ---------- 字体 ---------- */
+  --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
+               -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Cascadia Mono", Consolas, monospace;
+
+  /* ---------- 字号阶梯 [重构] ---------- */
+  --text-2xs:  11px;   /* 图表刻度 / 单位后缀 */
+  --text-xs:   12px;   /* 徽章 / 元信息 / 时间戳 */
+  --text-sm:   14px;   /* [改] 13→14：表格单元格 / 表头 / 按钮 / label */
+  --text-base: 15px;   /* [改] 14→15：正文 / 表单值 / 描述 */
+  --text-lg:   17px;   /* [改] 16→17：卡片标题 */
+  --text-xl:   20px;   /* 页面标题 */
+  --text-2xl:  26px;   /* [改] 24→26：统计卡数值 */
+  --text-3xl:  32px;   /* [改] 30→32：封面标题 */
+
+  /* ---------- 行高 ---------- */
+  --leading-tight:  1.25;   /* [新增] 数值 */
+  --leading-snug:   1.4;    /* [新增] 标题 */
+  --leading-normal: 1.55;   /* [新增] 表格 */
+  --leading-relaxed: 1.6;   /* [新增] 中文正文 */
+
+  /* ---------- 字重 ---------- */
+  --weight-regular:  400;   /* [新增] 中文最小字重，禁止 300 */
+  --weight-medium:   500;   /* [新增] 徽章 / 表头 / 按钮 */
+  --weight-semibold: 600;   /* [新增] 标题，中文最大字重 */
+
+  /* ---------- 层级 ---------- */
+  --z-sidebar:  100;
+  --z-topbar:   200;
   --z-dropdown: 300;
-  --z-modal: 400;
-  --z-tooltip: 500;
+  --z-modal:    400;
+  --z-tooltip:  500;
+
+  /* ============================================================
+     兼容层 · 存量别名（只做映射，不产生新语义）
+     说明：phase1 §8.2 要求删除旧令牌，但旧名在全站 CSS 中被引用约
+           130 次。直接删除会让未改造的页面失去颜色（computed 值失效）。
+           因此保留旧名 → 新档位的单向映射，待页面全量改造后再清理。
+     禁止在新代码中继续使用本区变量。
+     ============================================================ */
+  /* 语义色旧名 → 四档 */
+  --color-success:       var(--color-success-fill);
+  --color-success-light: var(--color-success-bg);
+  --color-warning:       var(--color-warning-fill);
+  --color-warning-light: var(--color-warning-bg);
+  --color-danger:        var(--color-danger-fill);
+  --color-danger-light:  var(--color-danger-bg);
+  --color-info:          var(--color-info-fill);
+  --color-info-light:    var(--color-info-bg);
+  --color-primary-light: var(--color-primary-bg);
+  --color-primary-dark:  var(--color-primary-active);
+
+  /* 文字旧名 → 新档位（muted 提升到 tertiary，修复 2.56:1 不合格问题，见 S9） */
+  --text-muted: var(--text-tertiary);
+
+  /* 圆角旧名 → 4 档 */
+  --border-radius-sm: var(--radius-sm);
+  --border-radius:    var(--radius-md);
+  --border-radius-lg: var(--radius-lg);
+  --border-radius-xl: var(--radius-lg);
+  --radius:           var(--radius-lg);
+
+  /* 阴影旧名 → 3 档 */
+  --shadow-sm: var(--shadow-xs);
+  --shadow:    var(--shadow-md);
+
+  /* 过渡旧名 */
+  --transition-slow: 320ms ease-out;
+
+  /* 无前缀别名（原 pages.css / pages-enhanced.css 局部作用域用到的短名）
+     —— 全部指向 Slate 单一色板，删除 Tailwind Gray / Bootstrap 遗留色 */
+  --primary:       var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+  --primary-light: var(--color-primary-bg);
+  --success:       var(--color-success-fill);
+  --warning:       var(--color-warning-fill);
+  --danger:        var(--color-danger-fill);
+  --gray-50:       var(--color-gray-50);
+  --gray-100:      var(--color-gray-100);
+  --gray-200:      var(--color-gray-200);
+  --gray-300:      var(--color-gray-300);
+  --gray-400:      var(--color-gray-400);
+  --gray-500:      var(--color-gray-500);
+  --gray-600:      var(--color-gray-600);
+  --gray-700:      var(--color-gray-700);
+  --gray-800:      var(--color-gray-800);
+  --gray-900:      var(--color-gray-900);
 }
 
 /* 暗色模式支持（可选） */
@@ -95,8 +240,12 @@
   :root.auto-dark {
     --bg-page: #0F172A;
     --bg-card: #1E293B;
+    --bg-subtle: #334155;
+    --bg-inset: #0F172A;
     --text-primary: #F1F5F9;
-    --text-secondary: #94A3B8;
+    --text-secondary: #CBD5E1;
+    --text-tertiary: #94A3B8;
     --border-color: #334155;
+    --border-color-strong: #475569;
   }
 }

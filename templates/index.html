@@ -4,20 +4,18 @@
 <div class="page-container">
 
   {# 页面标题区 #}
-  <div class="page-hero">
-    <div>
-      <h1 class="page-hero-title">
-        <i data-lucide="cpu"></i>
-        设备列表
-      </h1>
-      <p class="page-hero-subtitle">管理所有设备资产信息</p>
+  <div class="page-head">
+    <div class="page-head-main">
+      <h1 class="page-head-title">设备列表</h1>
+      <div class="page-head-actions">
+        <a href="{{ url_for('dashboard.add_device') }}" class="btn btn-primary">
+          <i data-lucide="plus"></i>
+          新增设备
+        </a>
+      </div>
     </div>
-    <div class="page-hero-actions">
-      <a href="{{ url_for('dashboard.add_device') }}" class="btn btn-success">
-        <i data-lucide="plus"></i>
-        新增设备
-      </a>
-    </div>
+    <hr class="page-head-divider">
+    <p class="page-head-description">管理所有设备资产信息</p>
   </div>
 
   {# 搜索与筛选 #}
@@ -134,9 +132,23 @@
               {% endif %}
             </td>
             <td>
-              <span class="status-pill {{ device.status }}">
-                {% if device.status == 'active' %}启用{% else %}停用{% endif %}
-              </span>
+              {# 状态标签统一走 .badge-status（与设备看板同一套语义色），
+                 避免同一状态在两页出现不同颜色与不同措辞 #}
+              {% set _st_label = {
+                'active': '运行', 'running': '运行',
+                'maintenance': '维护中', 'repair': '维护中', 'calibration': '维护中',
+                'standby': '待机', 'debug': '调试',
+                'inactive': '停用', 'stopped': '停用',
+                'retired': '报废'
+              } %}
+              {% set _st_variant = {
+                'active': 'success', 'running': 'success',
+                'maintenance': 'warning', 'repair': 'warning', 'calibration': 'warning',
+                'standby': 'neutral-light', 'debug': 'info',
+                'inactive': 'neutral', 'stopped': 'neutral',
+                'retired': 'neutral-strong'
+              } %}
+              <span class="badge-status is-{{ _st_variant.get(device.status, 'neutral') }}">{{ _st_label.get(device.status, device.status) }}</span>
             </td>
             <td>
               <div class="table-actions">
@@ -153,7 +165,7 @@
                   {% if show_inactive %}
                   <input type="hidden" name="show_inactive" value="1">
                   {% endif %}
-                  <button class="table-action-btn {% if device.status == 'active' %}warning{% else %}success{% endif %}" 
+                  <button class="table-action-btn {% if device.status == 'active' %}danger{% else %}success{% endif %}" 
                           type="submit" title="{{ '启用' if device.status != 'active' else '停用' }}">
                     <i data-lucide="{{ 'play' if device.status != 'active' else 'pause' }}"></i>
                   </button>
@@ -202,14 +214,15 @@
     opacity: 0.85;
   }
   
+  /* 型号是数据值，不做标签化处理（灰底小字会让人误以为是可点的分类标签） */
   .model-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.5rem;
-    font-size: 12px;
-    background: var(--color-gray-100);
-    border-radius: var(--border-radius-sm);
+    display: inline;
+    padding: 0;
+    font-size: inherit;
+    background: none;
+    border-radius: 0;
     color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
   }
   
   .location-tag {

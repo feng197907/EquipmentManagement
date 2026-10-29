@@ -1,14 +1,11 @@
-/* ===== 主题配色 ===== */
+/* ===== 本页专用变量 =====
+   注意：不要在这里重定义 --border-radius / --transition / --shadow 等全局令牌，
+   否则本页会把设计系统整体改掉（历史上这里把全局圆角改成了 16px）。
+   下面这几个是本页专用的历史变量名，值已改为设计系统里的实色令牌。 */
 :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    --card-shadow: 0 10px 40px rgba(0,0,0,0.08);
-    --card-hover-shadow: 0 20px 60px rgba(0,0,0,0.12);
-    --border-radius: 16px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --primary-gradient: var(--color-primary);
+    --card-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --card-hover-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
 /* ===== 页面布局 ===== */
@@ -108,10 +105,10 @@
     height: 100%;
 }
 
-.stat-card.devices::before { background: linear-gradient(180deg, #667eea, #764ba2); }
-.stat-card.pending::before { background: linear-gradient(180deg, #f5576c, #f093fb); }
-.stat-card.borrowed::before { background: linear-gradient(180deg, #11998e, #38ef7d); }
-.stat-card.calibration::before { background: linear-gradient(180deg, #4facfe, #00f2fe); }
+.stat-card.devices::before { background: var(--color-primary); }
+.stat-card.pending::before { background: var(--color-danger-fill); }
+.stat-card.borrowed::before { background: var(--color-success-fill); }
+.stat-card.calibration::before { background: var(--color-info-fill); }
 
 .stat-icon {
     width: 48px;
@@ -277,12 +274,12 @@
     flex-shrink: 0;
 }
 
-.role-card.qa .role-avatar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-.role-card.engineer .role-avatar { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
-.role-card.validation .role-avatar { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
-.role-card.archive .role-avatar { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
-.role-card.production .role-avatar { background: linear-gradient(135deg, #f5af19 0%, #f12711 100%); color: white; }
-.role-card.metrology .role-avatar { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #764ba2; }
+.role-card.qa .role-avatar { background: var(--color-primary); color: white; }
+.role-card.engineer .role-avatar { background: var(--color-success-fill); color: white; }
+.role-card.validation .role-avatar { background: var(--color-info-fill); color: white; }
+.role-card.archive .role-avatar { background: var(--color-danger-fill); color: white; }
+.role-card.production .role-avatar { background: var(--color-warning-fill); color: white; }
+.role-card.metrology .role-avatar { background: var(--color-warning-fill); color: #fff; }
 
 .role-info h5 {
     margin: 0;

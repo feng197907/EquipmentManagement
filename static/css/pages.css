@@ -1,49 +1,16 @@
 /* =============================================
    设备详情页样式 (device_detail.html)
    ============================================= */
-:root {
-  --primary: var(--color-primary);
-  --primary-hover: var(--color-primary-hover);
-  --gray-50: var(--color-gray-50);
-  --gray-100: var(--color-gray-100);
-  --gray-200: var(--color-gray-200);
-  --gray-300: var(--border-color);
-  --gray-400: var(--color-gray-400);
-  --gray-500: var(--text-secondary);
-  --gray-600: var(--text-secondary);
-  --gray-700: var(--text-primary);
-  --gray-800: var(--text-primary);
-  --gray-900: var(--text-primary);
-}
-
+/* [Phase1 §3.1 / §8.2 已删除]
+   此处原有两段令牌重定义：
+     1) :root { --primary / --gray-50…900 }  —— 把 Slate 映射成 Tailwind Gray 的旧映射
+     2) .device-detail-page { --primary:#2563eb; --success:#16a34a; --warning:#ca8a04;
+                             --danger:#dc2626; --gray-*:#f9fafb…#111827; … }
+   它们是「同一语义在不同页面不同色值」的物理原因（S1）：
+   设备详情页的绿是 #16A34A、看板是 #10B981，黄是 #CA8A04 vs #F59E0B。
+   现全部改为继承 variables.css 的唯一令牌源；作用域类名保留，仅不再覆盖变量。 */
 .device-detail-page {
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --radius: 8px;
-  --radius-lg: 12px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
-  --transition: 200ms ease;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --success: #16a34a;
-  --warning: #ca8a04;
-  --danger: #dc2626;
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
+  /* 令牌来源：:root（static/css/variables.css）。此处禁止再声明 --color-* 等令牌。 */
 }
 
 /* 设备头部卡片 */
@@ -228,8 +195,7 @@
 
 .btn-upload:hover {
   background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-edit {
@@ -344,10 +310,12 @@
 }
 
 /* 文档分类网格 */
+/* 12 个文档分类：竖排一列时要滚 3 屏（888px），改自适应网格后 3-4 列 2 屏内看全 */
 .doc-category-grid {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-3);
+  align-items: start;
 }
 
 .doc-category-card {
@@ -380,11 +348,16 @@
   flex-shrink: 0;
 }
 
-.category-icon.doc-type-manual { background: #dbeafe; color: #2563eb; }
-.category-icon.doc-type-certificate { background: #dcfce7; color: #16a34a; }
-.category-icon.doc-type-calibration { background: #fef3c7; color: #ca8a04; }
-.category-icon.doc-type-maintenance { background: #f3e8ff; color: #9333ea; }
-.category-icon.doc-type-other { background: var(--gray-100); color: var(--gray-500); }
+/* 文档类型图标一律中性底：彩色图标底块会让"红/黄/绿"失去告警含义，
+   而且 12 个分类并排时是调色板。类型靠图标形状 + 文字区分，不靠颜色。 */
+.category-icon.doc-type-manual,
+.category-icon.doc-type-certificate,
+.category-icon.doc-type-calibration,
+.category-icon.doc-type-maintenance,
+.category-icon.doc-type-other {
+  background: var(--color-gray-100);
+  color: var(--color-gray-600);
+}
 
 .category-info {
   flex: 1;
@@ -492,17 +465,25 @@
   flex-shrink: 0;
 }
 
-.status-badge {
-  display: inline-flex;
-  padding: var(--space-1) var(--space-2);
-  font-size: 0.75rem;
-  font-weight: 500;
-  border-radius: 4px;
+/* [Phase1 §8.2] 原此处重复定义 .status-badge 基础样式（去掉了圆点、字号写死 0.75rem），
+   覆盖了 components.css 的版本。已删除基础定义，只保留文档状态变体，
+   并按 §3.4-B 映射到四档语义色：
+     已生效 → success / 草稿 → neutral-light（空心点）/ 已归档 → neutral */
+.status-badge.status-active {
+  color: var(--color-success-text);
+  background: var(--color-success-bg);
 }
 
-.status-badge.status-active { background: #dcfce7; color: #166534; }
-.status-badge.status-draft { background: var(--gray-100); color: var(--gray-600); }
-.status-badge.status-archived { background: #dbeafe; color: #1e40af; }
+.status-badge.status-draft {
+  color: var(--color-neutral-fill);
+  background: var(--color-gray-50);
+  border-color: var(--color-neutral-border);
+}
+
+.status-badge.status-archived {
+  color: var(--color-neutral-text);
+  background: var(--color-neutral-bg);
+}
 
 .doc-actions {
   display: flex;
@@ -618,77 +599,40 @@
    文档上传页样式 (upload_doc.html)
    ============================================= */
 .upload-page {
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-light: #dbeafe;
-  --success: #16a34a;
-  --warning: #ca8a04;
-  --danger: #dc2626;
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
-  --radius: 8px;
-  --radius-lg: 12px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow: 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
-  --transition: 200ms ease;
-
+  /* [Phase1 §8.2 已删除] 原此处重复定义 --primary/--success/--warning/--danger/
+     --gray-50…900（Tailwind Gray）+ --radius/--shadow，与全局令牌冲突（S1）。
+     现仅保留页面级布局约束，颜色一律继承 :root。 */
   max-width: 1000px;
   margin: 0 auto;
 }
 
-/* 页面头部 */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-6, 1.5rem);
-  margin-bottom: var(--space-6, 1.5rem);
-}
+/* 页面头部 —— [Phase1 §8.2 已删除重复定义]
+   原此处又定义了一遍 .page-header / .page-title / .page-subtitle，
+   与 components.css 中的同名规则冲突（24px vs 20px），且用 Tailwind Gray。
+   现统一由 components.css 的 .page-head / .page-header 规格接管。 */
 
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2, 0.5rem);
-  color: var(--gray-500);
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
   text-decoration: none;
-  font-size: 0.875rem;
-  margin-bottom: var(--space-3, 0.75rem);
-  transition: color var(--transition);
+  transition: color var(--transition-fast);
 }
 
 .back-link:hover {
-  color: var(--gray-700);
-}
-
-.page-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--gray-900);
-  margin: 0 0 var(--space-2, 0.5rem) 0;
-}
-
-.page-subtitle {
-  font-size: 0.875rem;
-  color: var(--gray-500);
-  margin: 0;
+  color: var(--color-primary);
 }
 
 .device-info-badge {
   display: flex;
-  gap: var(--space-4, 1rem);
-  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
-  background: var(--gray-50);
-  border-radius: var(--radius);
-  border: 1px solid var(--gray-200);
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-subtle);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
 }
 
 .device-info-item {
@@ -943,11 +887,15 @@
   border-radius: var(--radius);
 }
 
-.type-icon.doc-type-manual { background: #dbeafe; color: #2563eb; }
-.type-icon.doc-type-certificate { background: #dcfce7; color: #16a34a; }
-.type-icon.doc-type-calibration { background: #fef3c7; color: #ca8a04; }
-.type-icon.doc-type-maintenance { background: #f3e8ff; color: #9333ea; }
-.type-icon.doc-type-other { background: var(--gray-200); color: var(--gray-500); }
+/* 同上：上传页的类型选择也走中性底，与详情页同一套视觉语言 */
+.type-icon.doc-type-manual,
+.type-icon.doc-type-certificate,
+.type-icon.doc-type-calibration,
+.type-icon.doc-type-maintenance,
+.type-icon.doc-type-other {
+  background: var(--color-gray-100);
+  color: var(--color-gray-600);
+}
 
 .type-label {
   font-size: 0.875rem;
@@ -1004,49 +952,17 @@
   margin-top: var(--space-2, 0.5rem);
 }
 
-/* 按钮 */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2, 0.5rem);
-  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
-  font-size: 0.875rem;
-  font-weight: 500;
-  border-radius: var(--radius);
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all var(--transition);
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: white;
-}
-
-.btn-primary:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow);
-}
-
-.btn-secondary {
-  background: white;
-  color: var(--gray-600);
-  border: 1px solid var(--gray-300);
-}
-
-.btn-secondary:hover {
-  background: var(--gray-50);
-  border-color: var(--gray-400);
-}
+/* 按钮 —— [Phase1 §8.2 已删除重复定义]
+   原此处重新定义了一遍全局 .btn / .btn-primary / .btn-secondary，导致：
+     · 上传页按钮高度 41px，其他页 36px（控件不齐的直接原因）
+     · .btn-primary:hover 带 transform: translateY(-1px)（§2.2 禁止位移）
+   现统一由 components.css 的 .btn 规格接管。 */
 
 .form-actions {
   display: flex;
-  gap: var(--space-3, 0.75rem);
-  padding-top: var(--space-4, 1rem);
-  border-top: 1px solid var(--gray-100);
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--border-color);
 }
 
 .btn-upload-submit {
@@ -1057,6 +973,7 @@
 @media (max-width: 768px) {
   .page-header {
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .device-info-badge {

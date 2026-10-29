@@ -6,12 +6,15 @@
 {% endblock %}
 {% block content %}
 {# 维修记录表单页面 #}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <div>
-    <h3 class="mb-1">添加维修记录</h3>
-    <div class="text-muted">{{ device.device_code }} · {{ device.device_name }}</div>
+<div class="page-head">
+  <div class="page-head-main">
+    <h1 class="page-head-title">添加维修记录</h1>
+    <div class="page-head-actions">
+      <a class="btn btn-outline-secondary" href="{{ url_for('maintenance.repair_records', device_id=device.id) }}">返回</a>
+    </div>
   </div>
-  <a class="btn btn-outline-secondary" href="{{ url_for('maintenance.repair_records', device_id=device.id) }}">返回</a>
+  <hr class="page-head-divider">
+  <p class="page-head-description">{{ device.device_code }} · {{ device.device_name }}</p>
 </div>
 
 <div class="card" style="max-width: 800px; margin: 0 auto;">

@@ -10,19 +10,16 @@
 </style>
 {% endblock %}
 {% block content %}
-<div class="page-hero">
-  <div>
-    <h1 class="page-hero-title">
-      <i data-lucide="bar-chart-3"></i>
-      备件成本统计看板
-    </h1>
-    <p class="page-hero-subtitle">设备备件消耗经济学分析</p>
+<div class="page-head is-board">
+  <div class="page-head-main">
+    <h1 class="page-head-title">备件成本统计看板</h1>
+    <div class="page-head-actions">
+      <a href="{{ url_for('spare_part.spare_part_list') }}" class="btn btn-outline-secondary">
+        <i data-lucide="arrow-left"></i> 返回备件列表
+      </a>
+    </div>
   </div>
-  <div class="page-hero-actions">
-    <a href="{{ url_for('spare_part.spare_part_list') }}" class="btn btn-outline">
-      <i data-lucide="arrow-left"></i> 返回备件列表
-    </a>
-  </div>
+  <p class="page-head-description">设备备件消耗经济学分析</p>
 </div>
 
 {# 概览统计卡片 #}

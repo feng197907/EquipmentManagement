@@ -2,27 +2,28 @@
 {% block content %}
 <div class="page-container">
   <!-- 页面标题 -->
-  <div class="d-flex flex-wrap justify-content-between align-items-start mb-4">
-    <div>
-      <h3 class="mb-1">文档版本历史</h3>
-      <p class="text-muted mb-0">
-        <span class="fw-medium">{{ current_doc.doc_name }}</span>
-        <span class="mx-2">·</span>
-        <span>{{ doc_type_label }}</span>
-        <span class="mx-2">·</span>
-        <span>设备 {{ current_doc.device_code }}</span>
-      </p>
+  <div class="page-head">
+    <div class="page-head-main">
+      <h1 class="page-head-title">文档版本历史</h1>
+      <div class="page-head-actions">
+        <a class="btn btn-outline-secondary" href="{{ url_for('documents.document_search') }}">
+          <i data-lucide="search"></i>
+          返回检索
+        </a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('devices.device_detail', device_id=current_doc.device_id) }}">
+          <i data-lucide="arrow-left"></i>
+          返回设备详情
+        </a>
+      </div>
     </div>
-    <div class="btn-group">
-      <a class="btn btn-outline-primary" href="{{ url_for('devices.device_detail', device_id=current_doc.device_id) }}">
-        <i data-lucide="arrow-left"></i>
-        返回设备详情
-      </a>
-      <a class="btn btn-outline-secondary" href="{{ url_for('documents.document_search') }}">
-        <i data-lucide="search"></i>
-        返回检索
-      </a>
-    </div>
+    <hr class="page-head-divider">
+    <p class="page-head-description">
+      <span class="fw-medium">{{ current_doc.doc_name }}</span>
+      <span class="meta-sep">·</span>
+      <span>{{ doc_type_label }}</span>
+      <span class="meta-sep">·</span>
+      <span>设备 {{ current_doc.device_code }}</span>
+    </p>
   </div>
 
   <!-- 当前版本信息卡片 -->

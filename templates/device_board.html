@@ -2,31 +2,29 @@
 
 {% block content %}
 <!-- 页面标题 -->
-<div class="page-header">
-  <div>
-    <h1 class="page-title">设备看板</h1>
-    <p class="page-subtitle">按状态快速查看设备分布，使用筛选或搜索快速定位设备</p>
+<div class="page-head is-board">
+  <div class="page-head-main">
+    <h1 class="page-head-title">设备看板</h1>
+    <div class="page-head-actions">
+      <a href="{{ url_for('dashboard.add_device') }}" class="btn btn-primary">
+        <i data-lucide="plus"></i>
+        新增设备
+      </a>
+    </div>
   </div>
-  <div class="page-actions">
-    <a href="{{ url_for('dashboard.add_device') }}" class="btn btn-primary">
-      <i data-lucide="plus"></i>
-      新增设备
-    </a>
-  </div>
+  <p class="page-head-description">按状态快速查看设备分布，使用筛选或搜索快速定位设备</p>
 </div>
 
 <!-- 统计卡片 -->
-<div class="row g-3 mb-4">
+<div class="stat-grid mb-4">
   {% for s, label in status_labels.items() %}
-  <div class="col-sm-6 col-lg-3">
-    <div class="stat-card stat-card-clickable" onclick="filterByStatus('{{ s }}')">
+  <div class="stat-card stat-card-clickable" onclick="filterByStatus('{{ s }}')">
       <div class="stat-icon {% if s in ['active', 'running'] %}success{% elif s in ['maintenance', 'repair'] %}warning{% elif s in ['inactive', 'stopped'] %}neutral{% elif s in ['retired'] %}danger{% else %}info{% endif %}">
-        <i data-lucide="{% if s in ['active', 'running'] %}play{% elif s in ['maintenance', 'repair'] %}wrench{% elif s in ['inactive', 'stopped'] %}pause{% elif s in ['retired'] %}trash-2{% elif s in ['standby'] %}clock{% else %}settings{% endif %}"></i>
+        <i data-lucide="{% if s in ['active', 'running'] %}play{% elif s == 'maintenance' %}wrench{% elif s == 'repair' %}hammer{% elif s in ['inactive', 'stopped'] %}pause{% elif s in ['retired'] %}trash-2{% elif s in ['standby'] %}clock{% else %}settings{% endif %}"></i>
       </div>
-      <div class="stat-content">
-        <div class="stat-value">{{ status_counts.get(s, 0) }}</div>
-        <div class="stat-label">{{ label }}</div>
-      </div>
+    <div class="stat-content">
+      <div class="stat-value">{{ status_counts.get(s, 0) }}</div>
+      <div class="stat-label">{{ label }}</div>
     </div>
   </div>
   {% endfor %}
@@ -142,11 +140,12 @@
           </td>
           <td>
             <div class="table-actions">
-              <a href="{{ url_for('devices.device_detail', device_id=d.id) }}" class="btn btn-sm btn-outline-primary" data-tooltip="查看详情">
+              {# 操作列统一为无边框图标按钮，hover 才出底；不再一蓝一灰描边不统一 #}
+              <a href="{{ url_for('devices.device_detail', device_id=d.id) }}" class="btn btn-sm btn-ghost" data-tooltip="查看详情" aria-label="查看详情">
                 <i data-lucide="eye"></i>
               </a>
               {% if current_user.is_admin %}
-              <a href="{{ url_for('devices.edit_device', device_id=d.id) }}" class="btn btn-sm btn-outline-secondary" data-tooltip="编辑">
+              <a href="{{ url_for('devices.edit_device', device_id=d.id) }}" class="btn btn-sm btn-ghost" data-tooltip="编辑" aria-label="编辑">
                 <i data-lucide="edit-2"></i>
               </a>
               {% endif %}

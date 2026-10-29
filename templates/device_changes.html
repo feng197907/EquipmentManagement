@@ -1,8 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>设备状态变更审批</h2>
+<div>
+  <div class="page-head">
+    <div class="page-head-main">
+      <h1 class="page-head-title">设备状态变更审批</h1>
+    </div>
+    <hr class="page-head-divider">
+    <p class="page-head-description">设备状态变更需经审批后方可生效，确保状态变更可追溯</p>
+  </div>
   {% if rows and rows|length > 0 %}
     <table class="table table-striped">
       <thead>

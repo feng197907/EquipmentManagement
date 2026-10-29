@@ -1,95 +1,90 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="page-header">
-    <div class="page-title">
-        <h1>系统设置</h1>
-        <p class="page-subtitle">配置系统功能和流程</p>
+{# 系统设置（类型 D：表单/设置页，phase1 §7.3 / P16）
+   改造要点：
+     1) 页头统一 .page-head，描述说明「这些设置影响什么」；
+     2) 卡片宽度 = 内容区全宽（max-width 880 靠左），不再是 600px 卡片 + 悬空按钮；
+     3) 保存按钮移入卡片 footer，右对齐到卡片内边缘（原来对齐卡片右边缘但物理位置在卡片外）；
+     4) 开关「开」用 --color-primary 蓝，不用 success 绿（开关状态不是合规状态，§7.3-D-3）；
+     5) 删除全部 Bootstrap 4 遗留色值（#212529 / #6c757d / #f8f9fa / #e9ecef / #f1f3f4），
+        改为 Slate 令牌取值。 #}
+<div class="page-head">
+    <div class="page-head-main">
+        <h1 class="page-head-title">系统设置</h1>
     </div>
+    <hr class="page-head-divider">
+    <p class="page-head-description">配置系统功能和流程，保存后对全部用户生效</p>
 </div>
 
-<div class="settings-container">
-    <form method="POST" class="settings-form">
-        <!-- 审批流程设置 -->
-        <div class="settings-section">
-            <div class="settings-section-header">
+<form method="POST" class="settings-form">
+    <div class="card">
+        <div class="card-header">
+            <span class="settings-section-title">
                 <i data-lucide="clipboard-check"></i>
-                <h2>审批流程设置</h2>
-            </div>
-            <div class="settings-section-body">
-                {% for key, config in settings_config.items() %}
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <div class="setting-label">{{ config.label }}</div>
-                        <div class="setting-description">{{ config.description }}</div>
-                    </div>
-                    <div class="setting-control">
-                        {% if config.type == 'boolean' %}
-                        <label class="toggle-switch">
-                            <input type="checkbox" name="{{ key }}" {% if settings[key].setting_value == 'true' %}checked{% endif %}>
-                            <span class="toggle-slider"></span>
-                        </label>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+                审批流程设置
+            </span>
         </div>
 
-        <div class="form-actions">
+        <div class="settings-body">
+            {% for key, config in settings_config.items() %}
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">{{ config.label }}</div>
+                    <div class="setting-description">{{ config.description }}</div>
+                </div>
+                <div class="setting-control">
+                    {% if config.type == 'boolean' %}
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="{{ key }}" {% if settings[key].setting_value == 'true' %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="card-footer">
             <button type="submit" class="btn btn-primary">
                 <i data-lucide="save"></i>
                 保存设置
             </button>
         </div>
-    </form>
-</div>
+    </div>
+</form>
 
 <style>
-.settings-container {
-    max-width: 800px;
+/* 页面级样式仅保留本页独有的分组行与开关，其余全部复用
+   components.css 的 .card / .card-header / .card-footer / .btn 规格。 */
+.settings-form {
+    max-width: 880px;   /* 靠左，不居中漂浮（§7.3-D-1） */
 }
 
-.settings-section {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    margin-bottom: 24px;
-    overflow: hidden;
-}
-
-.settings-section-header {
-    display: flex;
+.settings-section-title {
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px 20px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e9ecef;
+    gap: var(--space-2);
 }
 
-.settings-section-header i {
-    width: 20px;
-    height: 20px;
-    color: #495057;
+.settings-section-title svg {
+    width: var(--icon-md);
+    height: var(--icon-md);
+    color: var(--text-tertiary);
+    stroke-width: 1.75;
 }
 
-.settings-section-header h2 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #212529;
-}
-
-.settings-section-body {
-    padding: 8px 0;
+.settings-body {
+    padding: 0;   /* 行自带横向 24px padding，让分隔线与卡片边缘对齐 */
 }
 
 .setting-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid #f1f3f4;
+    gap: var(--space-6);
+    padding: var(--space-4) var(--card-padding);
+    border-bottom: var(--border-width) solid var(--border-color);
 }
 
 .setting-item:last-child {
@@ -98,30 +93,36 @@
 
 .setting-info {
     flex: 1;
-    margin-right: 20px;
+    min-width: 0;
 }
 
 .setting-label {
-    font-weight: 500;
-    color: #212529;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--text-primary);
 }
 
 .setting-description {
-    font-size: 0.875rem;
-    color: #6c757d;
-    line-height: 1.4;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--text-tertiary);
 }
 
-/* Toggle Switch */
+.setting-control {
+    flex-shrink: 0;
+}
+
+/* 开关：40×22，开=主色蓝，关=中性灰（不用 success 绿） */
 .toggle-switch {
     position: relative;
     display: inline-block;
-    width: 48px;
-    height: 26px;
+    width: 40px;
+    height: 22px;
 }
 
 .toggle-switch input {
+    position: absolute;
     opacity: 0;
     width: 0;
     height: 0;
@@ -129,41 +130,36 @@
 
 .toggle-slider {
     position: absolute;
+    inset: 0;
     cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.3s;
-    border-radius: 26px;
+    background-color: var(--color-gray-300);
+    border-radius: var(--radius-full);
+    transition: background-color var(--transition-fast);
 }
 
-.toggle-slider:before {
-    position: absolute;
+.toggle-slider::before {
     content: "";
-    height: 20px;
-    width: 20px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.3s;
-    border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    position: absolute;
+    left: 2px;
+    bottom: 2px;
+    width: 18px;
+    height: 18px;
+    background-color: var(--bg-card);
+    border-radius: var(--radius-full);
+    transition: transform var(--transition-fast);
 }
 
 .toggle-switch input:checked + .toggle-slider {
-    background-color: var(--color-success, #28a745);
+    background-color: var(--color-primary);
 }
 
-.toggle-switch input:checked + .toggle-slider:before {
-    transform: translateX(22px);
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(18px);
 }
 
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
+.toggle-switch input:focus-visible + .toggle-slider {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
 }
 </style>
 {% endblock %}

@@ -1,18 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-hero">
-  <div>
-    <h1 class="page-hero-title">
-      <i data-lucide="package-minus"></i>
-      备件消耗记录
-    </h1>
-    <p class="page-hero-subtitle">维修过程中消耗的备件明细</p>
+<div class="page-head">
+  <div class="page-head-main">
+    <h1 class="page-head-title">备件消耗记录</h1>
+    <div class="page-head-actions">
+      <a href="{{ url_for('spare_part.spare_part_list') }}" class="btn btn-outline-secondary">
+        <i data-lucide="arrow-left"></i> 返回备件列表
+      </a>
+    </div>
   </div>
-  <div class="page-hero-actions">
-    <a href="{{ url_for('spare_part.spare_part_list') }}" class="btn btn-outline">
-      <i data-lucide="arrow-left"></i> 返回备件列表
-    </a>
-  </div>
+  <hr class="page-head-divider">
+  <p class="page-head-description">维修过程中消耗的备件明细</p>
 </div>
 
 <div class="card">

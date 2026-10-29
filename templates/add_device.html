@@ -10,23 +10,18 @@
 <div class="page-container">
 
   {# 页面标题区 #}
-  <div class="page-hero {% if device %}page-hero-edit{% endif %}" 
-       style="{% if device %}background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);{% endif %}">
-    <div>
-      <h1 class="page-hero-title">
-        <i data-lucide="{% if device %}edit-2{% else %}plus-circle{% endif %}"></i>
-        {% if device %}编辑设备{% else %}新增设备{% endif %}
-      </h1>
-      <p class="page-hero-subtitle">
-        {% if device %}修改设备基本信息{% else %}添加新的设备到系统中{% endif %}
-      </p>
+  <div class="page-head">
+    <div class="page-head-main">
+      <h1 class="page-head-title">{% if device %}编辑设备{% else %}新增设备{% endif %}</h1>
+      <div class="page-head-actions">
+        <a href="{{ url_for('auth.index') }}" class="btn btn-outline-secondary">
+          <i data-lucide="arrow-left"></i>
+          返回列表
+        </a>
+      </div>
     </div>
-    <div class="page-hero-actions">
-      <a href="{{ url_for('auth.index') }}" class="btn btn-outline-light">
-        <i data-lucide="arrow-left"></i>
-        返回列表
-      </a>
-    </div>
+    <hr class="page-head-divider">
+    <p class="page-head-description">{% if device %}修改设备基本信息{% else %}添加新的设备到系统中{% endif %}</p>
   </div>
 
   {# 快捷操作 #}
@@ -166,181 +161,19 @@
 </div>
 
 <style>
-  .page-hero-edit {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-  }
-  
-  .form-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-sm);
-  }
-  
-  .form-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1.25rem 1.5rem;
-    background: linear-gradient(135deg, var(--color-gray-50) 0%, #fff 100%);
-    border-bottom: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-  }
-  
-  .form-card-header svg {
-    width: 24px;
-    height: 24px;
-    color: var(--color-primary);
-  }
-  
-  .form-card-title {
-    font-size: var(--text-lg);
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-  }
-  
-  .form-card-body {
-    padding: 1.5rem;
-  }
-  
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.25rem;
-  }
-  
-  .form-group {
-    margin-bottom: 0;
-  }
-  
-  .form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: var(--text-sm);
-    font-weight: 500;
-    color: var(--text-primary);
-  }
-  
-  .form-label.required::after {
-    content: " *";
-    color: var(--color-danger);
-  }
-  
-  .form-control {
-    width: 100%;
-    height: 42px;
-    padding: 0 1rem;
-    font-size: var(--text-sm);
-    font-family: var(--font-sans);
-    color: var(--text-primary);
-    background: #fff;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    transition: all var(--transition-fast);
-  }
-  
-  .form-control:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-  
-  .form-control::placeholder {
-    color: var(--text-muted);
-  }
-  
-  textarea.form-control {
-    height: auto;
-    min-height: 100px;
-    padding: 0.75rem 1rem;
-    resize: vertical;
-  }
-  
-  .form-hint {
-    margin-top: 0.375rem;
-    font-size: var(--text-xs);
-    color: var(--text-muted);
-  }
-  
-  .form-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border-color);
-  }
-  
-  .btn-lg {
-    padding: 0.625rem 1.5rem;
-    font-size: var(--text-base);
-  }
-  
-  .info-card {
-    background: var(--color-info-light);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    border-radius: var(--border-radius-lg);
-    overflow: hidden;
-  }
-  
-  .info-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 1.25rem;
-    background: rgba(59, 130, 246, 0.1);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    color: #1E40AF;
-  }
-  
-  .info-card-header svg {
-    width: 18px;
-    height: 18px;
-  }
-  
-  .info-card-body {
-    padding: 1rem 1.25rem;
-  }
-  
-  .info-list {
-    margin: 0;
-    padding-left: 1.25rem;
-    font-size: var(--text-sm);
-    color: #1E40AF;
-    line-height: 1.8;
-  }
-  
-  .info-list li {
-    margin-bottom: 0.25rem;
-  }
-  
-  .info-list li:last-child {
-    margin-bottom: 0;
-  }
-  
-  /* 响应式 */
-  @media (max-width: 768px) {
-    .form-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .form-actions {
-      flex-direction: column;
-    }
-    
-    .form-actions .btn {
-      width: 100%;
-    }
-  }
+  /* [Phase1/Phase2 收敛] 此处原有 226 行页面级样式，重复定义了
+     .form-card / .form-card-header / .form-card-title / .form-card-body /
+     .form-grid / .form-group / .form-label / .form-control / .form-hint /
+     .form-actions / .btn-lg，并把控件高度硬编码成 42px（覆盖全局 36px）。
+     这些规则与 pages-enhanced.css / components.css 冲突，已删除；
+     仅保留本页独有的「扫码输入组」与「提示信息卡」，并改为令牌取值。
+     页头已统一为 .page-head，原琥珀渐变变体一并废除（§7.2）。 */
 
-  /* 扫码输入组 */
+  /* 扫码输入组：输入框 + 扫码按钮同一行，高度与全局控件一致 */
   .input-with-scan {
     display: flex;
-    gap: 0.5rem;
-    align-items: stretch;
+    align-items: center;
+    gap: var(--space-2);
   }
 
   .input-with-scan .form-control {
@@ -351,44 +184,75 @@
   .btn-scan-inline {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0 0.875rem;
-    height: 42px;
-    background: var(--color-primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--border-radius);
+    justify-content: center;
+    gap: var(--space-1);
+    flex-shrink: 0;
+    height: var(--control-height);
+    padding: 0 var(--space-3);
     font-size: var(--text-sm);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
+    color: var(--text-inverse);
+    background: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-md);
     cursor: pointer;
     white-space: nowrap;
-    transition: background var(--transition-fast), transform var(--transition-fast);
-    flex-shrink: 0;
+    transition: background-color var(--transition-fast);
   }
 
   .btn-scan-inline:hover {
     background: var(--color-primary-hover);
-    transform: translateY(-1px);
-  }
-
-  .btn-scan-inline:active {
-    transform: translateY(0);
+    border-color: var(--color-primary-hover);
   }
 
   .btn-scan-inline svg {
-    width: 16px;
-    height: 16px;
+    width: var(--icon-sm);
+    height: var(--icon-sm);
   }
 
   @media (max-width: 480px) {
-    .btn-scan-inline span {
-      display: none;
-    }
-    .btn-scan-inline {
-      width: 44px;
-      padding: 0;
-      justify-content: center;
-    }
+    .btn-scan-inline span { display: none; }
+  }
+
+  /* 提示信息卡：改为中性底 + 1px 边框（原则一：语义色只表达合规状态，不做装饰块） */
+  .info-card {
+    background: var(--bg-subtle);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .info-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--text-secondary);
+    border-bottom: var(--border-width) solid var(--border-color);
+  }
+
+  .info-card-header svg {
+    width: var(--icon-sm);
+    height: var(--icon-sm);
+    color: var(--text-tertiary);
+  }
+
+  .info-card-body {
+    padding: var(--space-4);
+  }
+
+  .info-list {
+    margin: 0;
+    padding-left: var(--space-5);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+  }
+
+  .info-list li + li {
+    margin-top: var(--space-1);
   }
 </style>
 

@@ -4,27 +4,25 @@
 <div class="page-container">
 
   {# 页面标题区 #}
-  <div class="page-hero">
-    <div>
-      <h1 class="page-hero-title">
-        <i data-lucide="file-search"></i>
-        文档检索
-      </h1>
-      <p class="page-hero-subtitle">快速查找和管理设备相关文档</p>
+  <div class="page-head">
+    <div class="page-head-main">
+      <h1 class="page-head-title">文档检索</h1>
+      <div class="page-head-actions">
+        <a href="{{ url_for('documents.document_search') }}?reset=1" class="btn btn-outline-secondary">
+          <i data-lucide="rotate-ccw"></i>
+          重置筛选
+        </a>
+      </div>
     </div>
-    <div class="page-hero-actions">
-      <a href="{{ url_for('documents.document_search') }}?reset=1" class="btn btn-outline-light">
-        <i data-lucide="rotate-ccw"></i>
-        重置筛选
-      </a>
-    </div>
+    <hr class="page-head-divider">
+    <p class="page-head-description">快速查找和管理设备相关文档</p>
   </div>
 
   {# 统计概览 #}
   <div class="stats-overview">
     <div class="stat-mini-card">
-      <div class="stat-mini-icon" style="background: var(--color-primary-light);">
-        <i data-lucide="files" style="color: var(--color-primary);"></i>
+      <div class="stat-mini-icon">
+        <i data-lucide="files"></i>
       </div>
       <div class="stat-mini-content">
         <div class="stat-mini-value">{{ rows|length if rows else 0 }}</div>
@@ -32,8 +30,8 @@
       </div>
     </div>
     <div class="stat-mini-card">
-      <div class="stat-mini-icon" style="background: var(--color-success-light);">
-        <i data-lucide="check-circle" style="color: var(--color-success);"></i>
+      <div class="stat-mini-icon">
+        <i data-lucide="check-circle"></i>
       </div>
       <div class="stat-mini-content">
         <div class="stat-mini-value">{{ rows|selectattr('status', 'equalto', 'active')|list|length if rows else 0 }}</div>
@@ -41,8 +39,8 @@
       </div>
     </div>
     <div class="stat-mini-card">
-      <div class="stat-mini-icon" style="background: var(--color-info-light);">
-        <i data-lucide="archive" style="color: var(--color-info);"></i>
+      <div class="stat-mini-icon">
+        <i data-lucide="archive"></i>
       </div>
       <div class="stat-mini-content">
         <div class="stat-mini-value">{{ rows|selectattr('status', 'equalto', 'archived')|list|length if rows else 0 }}</div>
@@ -209,9 +207,11 @@
                 </p>
                 {% if not query and not device_query %}
                 <div class="empty-state-action">
-                  <a href="{{ url_for('dashboard.add_device') }}" class="btn btn-primary">
-                    <i data-lucide="plus"></i>
-                    添加设备
+                  {# 上传入口是「设备 → 上传文档」，没有设备就无法上传，
+                     所以这里引导到设备列表而不是直接跳上传页 #}
+                  <a href="{{ url_for('auth.index') }}" class="btn btn-primary">
+                    <i data-lucide="cpu"></i>
+                    前往设备列表上传
                   </a>
                 </div>
                 {% endif %}
