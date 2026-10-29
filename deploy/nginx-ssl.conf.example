@@ -1,6 +1,6 @@
 server {
     listen 443 ssl;
-    server_name 101.201.48.64;
+    server_name emanage.com www.emanage.com 101.201.48.64;
 
     ssl_certificate     /etc/nginx/ssl/nginx.crt;
     ssl_certificate_key /etc/nginx/ssl/nginx.key;
@@ -25,7 +25,7 @@ server {
         proxy_send_timeout 120s;
     }
 
-    # 原来的静态练习站点保留在这里：https://101.201.48.64/site/
+    # 原来的静态练习站点保留在这里：https://emanage.com/site/
     location /site/ {
         alias /usr/share/nginx/html/;
         index index.html;

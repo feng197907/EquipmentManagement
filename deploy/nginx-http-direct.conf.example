@@ -1,0 +1,46 @@
+# 80 端口直连 HTTP（手机/无域名场景）
+#
+# 背景：
+#   443 上装的是自签证书。手机浏览器访问 http://IP 会被 301 到 https://IP，
+#   自签证书这一步之后，部分手机浏览器（尤其带"极速/省流/转码"的国产浏览器）
+#   只放行主文档，子资源 CSS/JS 被拦，页面退化成纯文本堆叠——样式全丢。
+#
+# 做法：把 nginx.conf 里 `listen 80 default_server` 那个默认站点，从
+#   return 301 https://$server_name$request_uri;
+# 改成反代到应用，使 http://IP 直接可用。
+#
+# 两个必须注意的点：
+#   1. 默认站点里原本有一段防盗链正则
+#        location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg)$ { valid_referers ...; }
+#      正则 location 优先级高于 `location /`，会把 /static/*.css 接走并按
+#      root /usr/share/nginx/html 去找，结果 404。必须整块删掉。
+#      删除时要按花括号配平，不能用 `.*?\n\s*}` 这种非贪婪正则——块内还有
+#      `if ($invalid_referer) { ... }`，非贪婪会停在那个内层右括号上，把外层
+#      location 的右括号留下，提前闭合整个 server 块，nginx -t 会报
+#      "location directive is not allowed here"。
+#   2. 域名（emanage.com）仍要走 HTTPS：conf.d/dms-http.conf 里那个
+#      server_name 精确匹配的 server 会先命中，继续 301 到 https，不受影响。
+#
+# 代价：明文传输，登录口令在公网上是明文的。仅建议在内网 / 临时验证阶段使用。
+# 正式做法应是给 443 换受信任证书（例如用 sslip.io 免费域名 + Let's Encrypt）。
+
+server {
+    listen       80 default_server;
+    listen       [::]:80;
+    server_name  101.201.48.64 _;
+
+    # 该默认站点直接反代到 DMS 应用：
+    # 手机/无域名场景用 http://101.201.48.64 明文访问，不再跳自签 HTTPS
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+        client_max_body_size 50m;
+    }
+}
