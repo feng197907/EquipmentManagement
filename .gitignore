@@ -2,7 +2,13 @@
 __pycache__/
 *.pyc
 *.log
+logs/
 dms.db
 equipment.db
+*.db
+*.db-journal
+*.db.bak.*
 uploads/
 .env
+.env.local
+deploy/*.bak.*

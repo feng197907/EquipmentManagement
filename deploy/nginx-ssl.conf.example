@@ -1,0 +1,33 @@
+server {
+    listen 443 ssl;
+    server_name 101.201.48.64;
+
+    ssl_certificate     /etc/nginx/ssl/nginx.crt;
+    ssl_certificate_key /etc/nginx/ssl/nginx.key;
+
+    # 安全加固
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    # DMS 有扫码上传图片 / 文档功能，默认 1m 不够
+    client_max_body_size 50m;
+
+    # 根路径反代到 Flask 应用 (gunicorn 监听 127.0.0.1:5000)
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+
+    # 原来的静态练习站点保留在这里：https://101.201.48.64/site/
+    location /site/ {
+        alias /usr/share/nginx/html/;
+        index index.html;
+    }
+}
