@@ -144,9 +144,21 @@
   </div>
 
   <div class="manual-card">
+    {% if manual_html %}
     <div class="manual-content markdown-body">
       {{ manual_html|safe }}
     </div>
+    {% else %}
+    <div class="manual-content">
+      <h2>手册暂时无法显示</h2>
+      <p>{{ manual_error }}</p>
+      <p>这个页面是实时渲染仓库里的 <code>docs/使用手册.md</code>。
+         如果该文件没有随镜像一起发布（<code>.dockerignore</code> 里排除了
+         <code>docs</code>），就会出现这个提示。</p>
+      <p>运维处理：确认 <code>.dockerignore</code> 保留了 <code>docs/*.md</code>，
+         然后重新构建镜像并重启容器。</p>
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

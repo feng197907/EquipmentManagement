@@ -2,7 +2,7 @@ import importlib
 
 # 看板与提醒 Blueprint
 from pathlib import Path
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from config import DEVICE_STATUS_LABELS, DOC_STATUS_LABELS, ROLE_LABELS
@@ -65,16 +65,42 @@ def _build_calibration_reminder_from_maintenance_plan(row):
 dashboard_bp = Blueprint("dashboard", __name__)
 
 
+# 用户手册的来源文件，随镜像一起发布（.dockerignore 不能排除 docs/*.md）
+MANUAL_REL_PATH = Path("docs") / "使用手册.md"
+
+# 手册是静态内容，进程内只转换一次；md 改了按 mtime 自动失效
+_manual_cache = {"mtime": None, "html": None}
+
+
 def _load_user_manual_html():
-    """读取并转换用户手册 markdown。"""
-    manual_path = Path(__file__).resolve().parent.parent / "docs" / "使用手册.md"
-    manual_md = manual_path.read_text(encoding="utf-8")
-    markdown_lib = importlib.import_module("markdown")
-    return markdown_lib.markdown(
-        manual_md,
-        extensions=["extra", "fenced_code", "tables", "toc"],
-        output_format="html",
-    )
+    """读取并转换用户手册 markdown。
+
+    返回 (html, None) 表示成功，(None, 原因) 表示不可用——缺文件时不要让
+    异常冒到全局处理器，否则页面只会看到一句 "发生未知错误"。
+    """
+    manual_path = Path(__file__).resolve().parent.parent / MANUAL_REL_PATH
+    try:
+        mtime = manual_path.stat().st_mtime
+    except OSError:
+        return None, f"未找到手册文件：{manual_path}"
+
+    if _manual_cache["mtime"] == mtime and _manual_cache["html"] is not None:
+        return _manual_cache["html"], None
+
+    try:
+        manual_md = manual_path.read_text(encoding="utf-8")
+        markdown_lib = importlib.import_module("markdown")
+        html = markdown_lib.markdown(
+            manual_md,
+            extensions=["extra", "fenced_code", "tables", "toc"],
+            output_format="html",
+        )
+    except Exception as exc:  # 依赖缺失、编码错误等都落在这里
+        return None, f"手册渲染失败：{exc}"
+
+    _manual_cache["mtime"] = mtime
+    _manual_cache["html"] = html
+    return html, None
 
 
 @dashboard_bp.route("/")
@@ -87,9 +113,13 @@ def home():
 @dashboard_bp.route("/user-manual")
 def user_manual():
     """用户手册页面"""
+    manual_html, manual_error = _load_user_manual_html()
+    if manual_error:
+        current_app.logger.error(f"[user-manual] {manual_error}")
     return render_template(
         "user_manual.html",
-        manual_html=_load_user_manual_html(),
+        manual_html=manual_html,
+        manual_error=manual_error,
         manual_title="用户手册",
     )
 

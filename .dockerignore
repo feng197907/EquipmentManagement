@@ -31,9 +31,12 @@ logs
 uploads
 
 # 与运行无关
+# 注意：docs/ 不能整体排除。/user-manual 这个路由在运行时读 docs/使用手册.md
+# 做 markdown 渲染，排掉就会 500（全局异常处理器还会把它变成一句 JSON 报错）。
+# 所以只排截图，保留 docs/*.md。
 tests
-docs
 deploy
 migrate
 scripts
+docs/screenshots
 *.md
