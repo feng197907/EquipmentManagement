@@ -2,266 +2,137 @@
 
 <div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
-![Flask](https://img.shields.io/badge/Flask-3.0-green.svg)
-![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple.svg)
+![Python](https://img.shields.io/badge/Python-3.11-3776AB.svg)
+![Flask](https://img.shields.io/badge/Flask-3.1-000000.svg)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3.3-7952B3.svg)
+![MariaDB](https://img.shields.io/badge/MariaDB-10.6+-003545.svg)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Status](https://img.shields.io/badge/Status-Production-brightgreen.svg)
 
 **面向制药企业的 GMP 合规设备档案与文档管理系统**
 
-开箱即用 · 14 模块化 Blueprint · SQLite/MySQL 双数据库 · 78 条路由
+15 个业务模块 · 85 条路由 · 7 种角色权限 · 审计追踪与电子签名 · 响应式界面（手机可用）
 
-[快速开始](#快速开始) · [功能概览](#功能概览) · [文档体系](#文档体系) · [部署指南](#部署指南) · [项目结构](#项目结构)
+[快速开始](#快速开始) · [功能概览](#功能概览) · [技术栈](#技术栈) · [项目结构](#项目结构) · [上线发布](#上线发布) · [文档](#文档)
 
 </div>
 
 ---
 
-## 文档体系
+## 这套系统解决什么问题
 
-完整的文档体系已建立，根据不同角色导航到相应文档：
+制药企业的设备要过 GMP 检查，绕不开三件事：**每台设备的档案是否完整**、**校准和维护是否按期做了且有记录**、**谁在什么时候改了什么是否可追溯**。这三件事靠 Excel 和纸质记录做，检查前必然要补材料。
 
-| 文档 | 受众 | 内容 |
-|------|------|------|
-| 📖 [使用手册](docs/使用手册.md) | 最终用户 | 功能操作指南、角色权限说明、常见问题 |
-| 🏗️ [架构文档](docs/ARCHITECTURE.md) | 开发者 / 架构师 | 系统架构、Blueprint 设计、数据层、权限模型 |
-| 💻 [开发指南](docs/DEVELOPMENT.md) | 贡献者 | 环境搭建、项目结构、编码规范、测试指南 |
-| 🚀 [部署指南](docs/DEPLOYMENT.md) | 运维人员 | 本地/生产部署、MySQL 配置、Webhook 自动部署 |
-| 📡 [API 参考](docs/API_REFERENCE.md) | 集成开发者 | 78 条路由完整参数、请求/响应示例、错误码 |
-
----
-
-## 功能概览
-
-### 📋 核心功能
-
-| 模块 | 功能 | 说明 |
-|------|------|------|
-| **设备管理** | 新增/编辑/停用/报废 | 完整的设备生命周期管理 |
-| **设备看板** | 状态统计与列表 | 可视化设备分布情况 |
-| **设备校准** | 校准计划与记录 | 确保设备精度合规 |
-| **设备维护** | 维护计划与执行 | 预防性维护管理 |
-| **备件管理** | 库存/入库/消耗/预警 | 备件全生命周期管理 |
-| **文档中心** | 上传/下载/版本控制 | 支持多版本文档管理 |
-| **借阅管理** | 借出/归还/审批 | 文档资产追踪 |
-| **审批流程** | 多级审批+电子签名 | 数字化审批体验 |
-| **提醒中心** | 待办事项与通知 | 不遗漏任何事项 |
-
-### 🔐 权限系统
-
-系统内置 **7 种角色**，精细化权限控制：
-
-| 角色 | 说明 | 核心权限 |
-|------|------|----------|
-| **管理员** (admin) | 系统最高权限 | 所有功能 |
-| **QA经理** (qa_manager) | 质量相关审批 | 文档审批、质量审批、报告查看 |
-| **设备工程师** (equipment_engineer) | 设备操作维护 | 设备操作、校准、维护 |
-| **验证工程师** (validation_engineer) | 验证文档管理 | IQ/OQ/PQ、文档审批 |
-| **计量工程师** (metrology_engineer) | 计量校准 | 设备校准、计量管理 |
-| **生产主管** (production_supervisor) | 生产审批 | 生产审批、文档审批、报告查看 |
-| **文档管理员** (archivist) | 文档归档 | 文档上传、归档管理 |
-
-> 💡 **审批权限说明**：拥有 `document_approval` 权限的角色（管理员、QA经理、验证工程师、生产主管）可处理审批待办。
-
-### 📊 审计追踪
-
-所有关键操作均记录审计日志，便于：
-- 合规审查
-- 问题追溯
-- 操作统计
+DMS 把设备台账、文档档案、校准/维护计划、审批与电子签名、审计日志放在一套系统里：设备到期自动提醒，文档改版留历史版本，关键操作留审计痕迹，审批走电子签名而不是手签扫描件。
 
 ---
 
 ## 快速开始
 
-### 环境要求
-
-- Python 3.10+
-- SQLite（默认）或 MySQL（可选）
-
-### 安装步骤
+### 本地跑起来（SQLite，零配置）
 
 ```bash
-# 1. 克隆项目
-git clone https://github.com/YOUR_USERNAME/EquipmentManagement.git
+git clone https://github.com/feng197907/EquipmentManagement.git
 cd EquipmentManagement
 
-# 2. 安装依赖
-pip install -r requirements.txt
+# Windows
+py -3 -m venv .venv && .venv\Scripts\activate
+# macOS / Linux
+python3 -m venv .venv && source .venv/bin/activate
 
-# 3. 启动服务
+pip install -r requirements.txt
 python app.py
 ```
 
-### Docker Compose 部署（生产用这套）
+打开 **http://127.0.0.1:5000**
 
-应用跑在容器里，MariaDB 和 nginx 留在宿主机。容器用 `network_mode: host` 直接复用宿主机网络栈，所以：
+首次启动会自动建表并写入默认账号，数据文件是项目根目录的 `dms.db`。
 
-- 容器看到的 `127.0.0.1:3306` 就是宿主机的 MariaDB
-- nginx 的 `proxy_pass http://127.0.0.1:5000` 不用改
-- MariaDB 可以安全地 bind 到 `127.0.0.1`，不再对公网开放 3306
+| 角色 | 用户名 | 密码 |
+|---|---|---|
+| 管理员 | `admin` | `admin123` |
+| 设备工程师 | `user` | `user123` |
 
-首次部署：
+> 🔴 **生产环境务必先改掉这两个密码。**
+> 它们是 `database.py` 里写死的初始化种子，本仓库是公开的，等于默认密码也是公开的。
+> 部署完第一件事就是登录进去改密码（`用户管理 → 重置密码`），再考虑把种子改成随机值。
+
+### 换成 MySQL / MariaDB
+
+复制环境变量模板，把 `DB_TYPE` 改成 `mysql` 并填入连接信息，重启即可：
 
 ```bash
 cp .env.example .env
-vi .env                      # 填 MYSQL_PASSWORD 和 SECRET_KEY
-
-docker compose up -d --build
-docker compose ps            # 等 STATUS 出现 (healthy)
+vi .env
 ```
 
-日常发布：
-
-```bash
-git pull origin main
-docker compose up -d --build     # 重建镜像并替换容器，秒级切换
+```ini
+DB_TYPE=mysql
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=appuser_rw
+MYSQL_PASSWORD=<你的密码>
+SECRET_KEY=<python -c "import secrets;print(secrets.token_hex(32))">
 ```
 
-运维命令：
-
-```bash
-docker compose logs -f app                  # 跟日志
-docker compose restart app                  # 只重启应用
-docker compose exec app sh                  # 进容器
-docker compose down                         # 停掉
-```
-
-上传文件和日志挂的是宿主机目录 `./uploads` 和 `./logs`，容器删了重建数据不丢，备份直接 `tar czf` 这两个目录即可。
-
-镜像自带健康检查，打的是应用自己的 `/healthz`——它会真的查一次数据库，所以 `unhealthy` 表示"进程活着但库连不上"，比只看进程有意义。
-
-> 旧的 `docker-compose-mysql.yml` + `.override.yml` 组合是「连数据库一起容器化」的独立跑法，本地开发想一键起 MySQL 时仍可用；生产不要用那套，会和宿主机的 MariaDB 抢 3306。
-
-### 访问系统
-
-> 🌐 **http://127.0.0.1:5000**
-
-### 默认账号
-
-| 角色 | 用户名 | 密码 |
-|------|--------|------|
-| 管理员 | admin | admin123 |
-| 设备工程师 | user | user123 |
-
-> ⚠️ **请首次登录后立即修改默认密码！**
+表结构不用手动建，启动时会自动创建并执行增量升级。
 
 ---
 
-## 系统截图
+## 功能概览
 
-### 登录页面
-![登录页面](docs/screenshots/login.png)
+| 模块 | 能力 |
+|---|---|
+| **设备管理** | 台账新增/编辑/停用/报废，设备变更走审批，变更历史可查 |
+| **设备看板** | 按状态（运行/维护/停用/报废/调试/待机/维修）统计与快速定位 |
+| **校准管理** | 校准周期、到期预警、校准记录归档 |
+| **维护管理** | 维护计划、执行记录、维修记录，支持关联备件消耗 |
+| **备件管理** | 库存、入库（加权平均价）、消耗扣减、低库存/缺货/呆滞预警、成本统计 |
+| **文档中心** | 上传、多版本管理、历史版本对比、按设备分类归档 |
+| **借阅管理** | 文档借出/归还/审批，资产流向可追踪 |
+| **审批中心** | 文档审批、设备变更审批，支持电子签名 |
+| **提醒中心** | 校准到期、维护到期、待审批、借阅中等待办聚合 |
+| **审计追踪** | 关键操作全量留痕：谁、何时、改前值、改后值、原因、IP |
+| **用户与权限** | 7 种角色、23 项细粒度权限，按角色分配 |
+| **系统设置** | 审批开关、提醒阈值等运行参数在线调整，无需改代码 |
 
-### 设备看板
-![设备看板](docs/screenshots/dashboard.png)
-
-### 设备列表
-![设备列表](docs/screenshots/device-list.png)
-
-### 设备详情
-![设备详情](docs/screenshots/device-detail.png)
-
-### 备件管理
-![备件管理](docs/screenshots/spare-parts.png)
-
-### 文档中心
-![文档中心](docs/screenshots/document-center.png)
-
-### 借阅管理
-![借阅管理](docs/screenshots/borrowing.png)
-
-### 审批流程
-![审批流程](docs/screenshots/approval.png)
-
-### 提醒中心
-![提醒中心](docs/screenshots/reminder.png)
-
-### 系统设置
-![系统设置](docs/screenshots/settings.png)
+界面基于 CSS 变量做了响应式适配，390px 宽的手机上可以正常浏览和操作（表格首列吸附、低频列自动隐藏）。
 
 ---
 
-## 部署指南
+## 权限系统
 
-### 本地开发部署
+7 种角色，权限在 `config.py` 的 `ROLE_PERMISSIONS` 里定义：
 
-```bash
-# 使用虚拟环境
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-.venv\Scripts\activate     # Windows
+| 角色 | 标识 | 权限数 | 职责 |
+|---|---|:--:|---|
+| 管理员 | `admin` | 17 | 全部功能，含用户管理、审计日志、系统设置 |
+| 设备工程师 | `equipment_engineer` | 9 | 设备操作、校准、维护、备件 |
+| QA 经理 | `qa_manager` | 5 | 质量审批、文档审批、报告查看、IQ/OQ/PQ |
+| 验证工程师 | `validation_engineer` | 5 | 验证文档管理、IQ/OQ/PQ |
+| 生产主管 | `production_supervisor` | 5 | 生产相关审批、文档审批 |
+| 计量工程师 | `metrology_engineer` | 5 | 计量器具管理、设备校准 |
+| 档案管理员 | `archivist` | 4 | 文档上传与归档 |
 
-# 安装依赖
-pip install -r requirements.txt
+> 谁能处理审批待办，取决于是否拥有 `document_approval` 权限 —— 管理员、QA 经理、验证工程师、生产主管。
 
-# 启动服务
-python app.py
-
-# 实时查看应用日志
-tail -f /data/EquipmentManagement/logs/app.log
-
-# 查看错误日志
-tail -f /data/EquipmentManagement/logs/error.log
-
-# 搜索错误
-grep -i "error\|exception" /data/EquipmentManagement/logs/app.log
-```
-
-### Linux 服务器部署
-
-```bash
-# 安装依赖
-pip3 install flask gunicorn
-
-# gunicorn 启动
-pkill -f gunicorn
-nohup gunicorn --bind 0.0.0.0:5000 --workers 2 app:app > gunicorn.log 2>&1 &
-tail -f gunicorn.log
-
-# 使用 systemd 管理服务
-sudo cp deploy/*.service /etc/systemd/system/
-sudo systemctl enable dms
-sudo systemctl start dms
-sudo systemctl status dms-webhook
-```
-
-### 一键迁移
-
-新服务器快速部署：
-
-```bash
-curl -sL https://raw.githubusercontent.com/YOUR_USERNAME/EquipmentManagement/main/migrate/quick_migrate.sh | bash
-```
+权限表里有一处值得留意的不一致：系统共定义 23 项权限，`admin` 只登记了 17 项，缺的 6 项（`validation_docs`、`production_approval`、`device_view`、`document_management`、`calibration_records`、`maintenance_records`）是其他岗位专属的。目前只有 2 项权限真正挂在路由上做校验，`admin` 都覆盖了，所以暂时不影响使用；`role_required` 装饰器里有显式的 admin 兜底，但 `permission_required` 没有。如果后续要严格按权限表管控，记得先给 `admin` 补齐，或给 `permission_required` 加上同样的兜底。
 
 ---
 
-## 自动化部署
+## 技术栈
 
-本项目支持 **GitHub Webhook** 自动化部署。
+| 层 | 选型 | 说明 |
+|---|---|---|
+| 后端 | Flask 3.1 + Jinja2 3.1 | 服务端渲染，无前后端分离 |
+| 认证 | Flask-Login | Session 认证 + 角色装饰器 |
+| 数据库 | MariaDB 10.6+（生产）/ SQLite（本地） | 同一套 SQL 层，靠 `database.py` 兼容两种方言 |
+| WSGI | gunicorn 26（2 worker） | 容器内运行，绑定 `127.0.0.1:5000` |
+| 前端 | Bootstrap 5.3.3 + 原生 JS | 已 vendor 到本地，不依赖 CDN，内网可用 |
+| 样式 | 9 个 CSS 文件 + CSS 变量设计令牌 | 无构建步骤，改完刷新即生效 |
+| 部署 | Docker Compose + 宿主 nginx | 应用容器化，数据库和 nginx 留宿主机 |
 
-### 配置步骤
-
-1. GitHub 仓库 → Settings → Webhooks → Add webhook
-2. 配置：
-   - **Payload URL**: `http://YOUR_SERVER:5001/webhook`
-   - **Content type**: `application/json`
-   - **Secret**: `YOUR_WEBHOOK_SECRET`
-   - **Events**: `push`
-
-### 部署流程
-
-```
-Git Push → GitHub Webhook → 服务器自动拉取 → 重启服务
-```
-
-### 查看日志
-
-```bash
-# 实时查看部署日志
-tail -f /var/log/webhook-deploy.log
-```
+**没有 npm、没有打包步骤**：改完模板和 CSS 直接生效，部署时也不用前端构建。
 
 ---
 
@@ -269,152 +140,158 @@ tail -f /var/log/webhook-deploy.log
 
 ```
 EquipmentManagement/
-├── app.py                 # 应用入口
-├── config.py              # 配置文件（角色、权限定义）
-├── database.py            # 数据库初始化与迁移
-├── extensions.py          # Flask 扩展初始化
-├── requirements.txt       # Python 依赖
+├── app.py                    # 应用工厂 create_app()，注册蓝图与 /healthz
+├── config.py                 # 角色定义、权限矩阵、业务常量
+├── database.py               # 建表、增量迁移、默认账号与默认设置
+├── extensions.py             # Flask 扩展（LoginManager 等）
+├── requirements.txt
+├── Dockerfile                # python:3.11-slim + gunicorn + tzdata
+├── docker-compose.yml        # 生产：host 网络，挂载 uploads/logs
 │
-├── blueprints/           # 路由模块（Controller）
-│   ├── __init__.py
-│   ├── auth.py           # 认证模块（登录/注销）
-│   ├── devices.py        # 设备管理
-│   ├── maintenance.py    # 设备维护
-│   ├── spare_part.py     # 备件管理
-│   ├── documents.py      # 文档管理
-│   ├── approvals.py      # 审批流程
-│   ├── borrowing.py      # 借阅管理
-│   ├── dashboard.py      # 仪表盘/看板
-│   ├── esign.py         # 电子签名
-│   ├── users.py         # 用户管理
-│   ├── settings.py      # 系统设置
-│   ├── password.py      # 密码重置
-│   ├── search.py        # 全局搜索
-│   └── device_changes.py # 设备变更审批
+├── blueprints/               # 路由层（15 个模块）
+│   ├── auth.py               #   登录 / 注销
+│   ├── devices.py            #   设备台账与详情
+│   ├── device_changes.py     #   设备变更审批
+│   ├── maintenance.py        #   维护计划、维护记录、维修记录
+│   ├── spare_part.py         #   备件库存、入库、消耗、预警、统计
+│   ├── documents.py          #   文档上传、版本、历史
+│   ├── borrowing.py          #   借阅
+│   ├── approvals.py          #   审批中心
+│   ├── esign.py              #   电子签名
+│   ├── dashboard.py          #   看板、提醒中心
+│   ├── users.py              #   用户与权限
+│   ├── settings.py           #   系统设置
+│   ├── password.py           #   忘记密码 / 重置申请
+│   ├── search.py             #   全局搜索
+│   └── log_bp.py             #   审计日志
 │
-├── models/               # 数据模型
-│   ├── __init__.py
-│   ├── user.py          # 用户模型
-│   ├── maintenance.py   # 维护计划/记录模型
-│   ├── spare_part.py    # 备件/入库/消耗/预警模型
-│   └── electronic_signature.py # 电子签名模型
+├── models/                   # 数据访问层
+│   ├── user.py
+│   ├── maintenance.py
+│   ├── spare_part.py
+│   └── electronic_signature.py
 │
-├── templates/            # 前端模板（Jinja2）
-│   ├── base.html        # 基础模板
-│   ├── login.html      # 登录页
-│   ├── index.html      # 首页
-│   ├── device_*.html   # 设备相关页面
-│   ├── spare_part_*.html # 备件相关页面
-│   ├── documents.html  # 文档中心
-│   ├── approvals.html  # 审批待办
-│   ├── reminders.html   # 提醒中心
-│   └── components/     # 可复用组件
-│       └── esign_modal.html # 电子签名弹窗
+├── utils/                    # 横切能力
+│   ├── decorators.py         #   权限装饰器 @require_permission
+│   ├── audit.py              #   审计日志写入
+│   ├── file_utils.py         #   上传文件校验与存储
+│   ├── db_utils.py
+│   ├── logging_config.py     #   日志配置（app.log / error.log）
+│   ├── maintenance.py        #   校准/维护到期计算
+│   ├── request_logger.py
+│   └── helpers.py
 │
-├── static/              # 静态资源
-│   ├── css/            # 样式文件
-│   ├── js/             # JavaScript 文件
-│   └── uploads/        # 上传文件存储
+├── templates/                # 33 个 Jinja2 模板
+│   └── components/           #   可复用组件（电子签名弹窗等）
 │
-├── utils/               # 工具函数
-│   ├── decorators.py   # 权限装饰器
-│   ├── audit.py        # 审计日志
-│   ├── file_utils.py   # 文件处理
-│   └── db_utils.py    # 数据库工具
+├── static/
+│   ├── css/                  # 9 个样式文件：variables / base / layout /
+│   │                         # components / pages / pages-enhanced / mobile …
+│   ├── js/
+│   └── vendor/               # Bootstrap、字体等本地依赖
 │
-├── scripts/             # 脚本工具
-│   ├── webhook_server.py  # Webhook 服务
-│   └── ...
+├── uploads/                  # 用户上传的文档（挂载到容器，备份就备它）
+├── logs/                     # 运行日志（挂载到容器）
 │
-├── migrate/             # 数据库迁移脚本
-│   ├── quick_migrate.sh
-│   └── ...
+├── deploy/                   # 部署脚本
+│   ├── compose-deploy.sh     #   一键发布（拉代码 → 建镜像 → 换容器 → 等健康）
+│   ├── status.sh             #   上线状态自检（只读，8 项）
+│   └── nginx-*.conf.example  #   nginx 反代样例
 │
-├── docs/                # 文档
-│   ├── 使用手册.md
-│   └── screenshots/    # 截图目录
-│
-├── tests/               # 测试文件
-│   ├── test_*.py
-│   └── ...
-│
-└── deploy/              # 部署配置
-    └── *.service       # systemd 服务文件
+├── docs/                     # 文档（见下方「文档」一节）
+├── tests/                    # 测试
+└── migrate/                  # 服务器搬家脚本
 ```
 
 ---
 
-## 数据库配置
+## 上线发布
 
-### 默认 SQLite（开箱即用）
+生产环境：**应用跑在 Docker 容器里，MariaDB 和 nginx 留在宿主机**。容器用 `network_mode: host` 复用宿主机网络栈，所以容器看到的 `127.0.0.1:3306` 就是宿主机的 MariaDB，nginx 的 `proxy_pass http://127.0.0.1:5000` 也不用改。
 
-无需任何配置，直接启动即可。数据文件：`dms.db`
-
-### 可选 MySQL
+服务器上（`/data/EquipmentManagement`）：
 
 ```bash
-# 1. 安装依赖
-pip install pymysql cryptography
-
-# 2. 修改 config.py 中的数据库配置
-# 或在服务器上创建 .env 文件配置数据库连接
+cd /data/EquipmentManagement
+./deploy/compose-deploy.sh     # 拉代码 → 建镜像 → 换容器 → 等健康检查
+./deploy/status.sh             # 8 项自检：版本 / 容器 / 健康 / 探针 / 版本号 / 镜像 / 磁盘
 ```
 
-服务器上部署时，把 `.env.example` 复制为 `.env`，再填上服务器的真实配置即可。
+> 📘 **完整流程、每一步的预期输出、回滚方式、排错速查，见 [`docs/上线操作手册.md`](docs/上线操作手册.md)。**
+> 上线这件事最容易踩的三个坑都写在里面：只 `restart` 不 `build`（代码不生效）、
+> 忘了提静态资源版本号（用户看到旧样式）、改了表结构没进迁移清单（线上不加列）。
+
+几个要点先记住：
+
+- **改代码后必须 `build`**：`docker compose restart` 不会重建镜像，代码不会变。
+- **改了 CSS/JS 要提版本号**：模板里 `?v=N` 是缓存开关，不发版就是旧样式。
+- **表结构变更要进清单**：`database.py` 的 `_migrate_mysql_columns` 里加一条幂等 `ALTER TABLE`，容器启动时自动执行。项目没用 Alembic。
+- **数据备份就是备两个目录**：`uploads/` 和数据库；容器删了重建不丢数据。
 
 ---
 
-## 备件管理模块
+## 界面截图
 
-### 功能概览
+<table>
+  <tr>
+    <td width="50%" align="center"><b>登录</b><br><img src="docs/screenshots/login.png" width="100%"></td>
+    <td width="50%" align="center"><b>设备看板</b><br><img src="docs/screenshots/dashboard.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>设备列表</b><br><img src="docs/screenshots/device-list.png" width="100%"></td>
+    <td align="center"><b>设备详情</b><br><img src="docs/screenshots/device-detail.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>备件库存（含库存预警）</b><br><img src="docs/screenshots/spare-parts.png" width="100%"></td>
+    <td align="center"><b>文档中心</b><br><img src="docs/screenshots/document-center.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>借阅管理</b><br><img src="docs/screenshots/borrowing.png" width="100%"></td>
+    <td align="center"><b>审批中心</b><br><img src="docs/screenshots/approval.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>提醒中心</b><br><img src="docs/screenshots/reminder.png" width="100%"></td>
+    <td align="center"><b>系统设置</b><br><img src="docs/screenshots/settings.png" width="100%"></td>
+  </tr>
+</table>
 
-| 功能 | 说明 |
-|------|------|
-| **备件库存** | 查看备件库存，支持按分类/名称搜索 |
-| **入库管理** | 记录备件入库，自动更新库存和加权平均价 |
-| **消耗记录** | 维修/维护时消耗备件，自动扣减库存 |
-| **库存预警** | 低库存/缺货/超量/呆滞 自动预警 |
-| **成本统计** | 备件消耗成本分析，按设备/类型统计 |
+---
 
-### 消耗记录关联
+## 文档
 
-备件消耗可关联至：
-- **维护记录** (`maintenance_record`)
-- **维修记录** (`repair_record`)
-
-在提交维护/维修记录时，可选择消耗的备件，系统自动：
-1. 扣减备件库存
-2. 记录消耗明细（数量、单价、总价）
-3. 触发库存预警检查
+| 文档 | 受众 | 内容 |
+|---|---|---|
+| 🚀 [**上线操作手册**](docs/上线操作手册.md) | **运维 / 开发** | **日常发布必看**：本地提交、Docker 操作、服务器发布三条路径、回滚、排错 |
+| 📖 [使用手册](docs/使用手册.md) | 最终用户 | 功能操作、角色权限、常见问题 |
+| 🏗️ [架构文档](docs/ARCHITECTURE.md) | 开发者 | 分层设计、蓝图划分、数据层、权限模型 |
+| 💻 [开发指南](docs/DEVELOPMENT.md) | 贡献者 | 环境搭建、编码规范、测试 |
+| 📡 [API 参考](docs/API_REFERENCE.md) | 集成开发者 | 路由参数、请求响应示例 |
+| 📜 [部署指南](docs/DEPLOYMENT.md) | — | ⚠️ 部分内容已由 Docker 方案取代，systemd 章节仅作历史参考 |
 
 ---
 
 ## 常见问题
 
-| 问题 | 解决方案 |
-|------|----------|
-| 登录后看不到内容 | 检查账号是否被停用或权限分配 |
-| 上传失败 | 确认文件类型（pdf/doc/docx/xls/xlsx/jpg/png） |
-| 服务启动失败 | 检查端口占用 `lsof -i:5000` |
-| 数据库异常 | 删除 `dms.db` 重启自动重建 |
-| 备件消耗不显示 | 检查 `spare_part_consumptions` 表是否有数据 |
+| 问题 | 处理 |
+|---|---|
+| 登录后看不到菜单 | 检查账号角色是否分配了对应权限（`用户管理 → 菜单权限`） |
+| 上传失败 | 确认格式在允许列表内（pdf/doc/docx/xls/xlsx/jpg/png），并检查 `uploads/` 写权限 |
+| 页面 502 | 后端容器没起来：`docker compose ps` + `docker compose logs --tail 100 app` |
+| 改了代码线上没变化 | 只 `restart` 没 `build`，见[上线操作手册](docs/上线操作手册.md) |
+| 改了样式线上没变化 | 模板里的 `?v=N` 没提，浏览器还在用缓存 |
+| 审计日志时间差 8 小时 | 容器缺 tzdata，镜像里已装并设 `TZ=Asia/Shanghai`，确认别改掉 |
+| 本地想重置数据 | 停掉服务，删掉 `dms.db`，重启自动重建（**仅限本地，生产禁止**） |
 
 ---
 
-## 参考文档
+## 许可
 
-- 📖 [使用手册](docs/使用手册.md)
-
----
-
-## 开源协议
-
-MIT License
+[MIT License](LICENSE)
 
 ---
 
 <div align="center">
 
-**如果这个项目对你有帮助，请点个 ⭐ Star！**
+**如果这个项目对你有帮助，点个 ⭐ Star 支持一下**
 
 </div>
