@@ -374,8 +374,11 @@
   height: var(--icon-sm);
 }
 
-/* 按钮内的span文字颜色 */
-.btn span {
+/* 按钮内的span文字颜色
+   必须排除 .badge：徽标自带语义底色（如 #F1F5F9），强制 inherit 会让它
+   继承按钮的前景色。在 .btn-primary（白字）里就成了白字压白底，#F1F5F9 上
+   对比度只有 1.05:1，数字完全看不见。 */
+.btn span:not(.badge) {
   color: inherit !important;
 }
 
@@ -409,7 +412,8 @@
   color: var(--text-inverse) !important;
 }
 
-.btn-primary span {
+/* 同上：徽标要保留自己的语义色，不能跟着主按钮继承白色 */
+.btn-primary span:not(.badge) {
   color: inherit !important;
 }
 
@@ -425,7 +429,7 @@
   color: var(--text-primary);
 }
 
-.btn-secondary span {
+.btn-secondary span:not(.badge) {
   color: inherit !important;
 }
 
@@ -441,7 +445,7 @@
   color: var(--text-inverse) !important;
 }
 
-.btn-success span {
+.btn-success span:not(.badge) {
   color: inherit !important;
 }
 
@@ -457,7 +461,7 @@
   color: var(--text-inverse) !important;
 }
 
-.btn-danger span {
+.btn-danger span:not(.badge) {
   color: inherit !important;
 }
 
@@ -473,7 +477,7 @@
   color: var(--text-inverse) !important;
 }
 
-.btn-warning span {
+.btn-warning span:not(.badge) {
   color: inherit !important;
 }
 
@@ -489,7 +493,7 @@
   color: var(--color-primary);
 }
 
-.btn-outline-primary span {
+.btn-outline-primary span:not(.badge) {
   color: inherit !important;
 }
 
@@ -504,7 +508,7 @@
   color: var(--text-primary) !important;
 }
 
-.btn-outline-secondary span {
+.btn-outline-secondary span:not(.badge) {
   color: inherit !important;
 }
 
@@ -520,7 +524,7 @@
   color: var(--color-danger-text) !important;
 }
 
-.btn-outline-danger span,
+.btn-outline-danger span:not(.badge),
 .btn-outline-danger i,
 .btn-outline-danger svg {
   color: inherit !important;
@@ -538,7 +542,7 @@
   color: var(--color-warning-text) !important;
 }
 
-.btn-outline-warning span,
+.btn-outline-warning span:not(.badge),
 .btn-outline-warning i,
 .btn-outline-warning svg {
   color: inherit !important;
@@ -556,7 +560,7 @@
   color: var(--color-info-text) !important;
 }
 
-.btn-outline-info span,
+.btn-outline-info span:not(.badge),
 .btn-outline-info i,
 .btn-outline-info svg {
   color: inherit !important;
@@ -574,7 +578,7 @@
   color: var(--text-primary) !important;
 }
 
-.btn-outline-light span {
+.btn-outline-light span:not(.badge) {
   color: inherit !important;
 }
 
@@ -594,7 +598,7 @@
   color: var(--text-secondary);
 }
 
-.btn-ghost span {
+.btn-ghost span:not(.badge) {
   color: inherit !important;
 }
 
@@ -1549,4 +1553,13 @@ textarea.form-control {
 .badge-secondary {
   color: var(--color-neutral-text);
   background: var(--color-neutral-bg);
+}
+
+/* 彩色实心按钮里的「反白」徽标：白底深字。
+   模板里筛选 tab 激活时用 badge-light text-dark（reminders.html:60/64/68），
+   但 .badge-light 此前从未定义过——没有底色，深色数字就直接压在红/黄底上。 */
+.badge-light {
+  color: var(--color-neutral-text);
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
 }

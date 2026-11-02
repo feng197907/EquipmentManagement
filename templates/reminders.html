@@ -53,7 +53,7 @@
     <div class="d-flex flex-wrap gap-1" role="group" aria-label="状态筛选">
       <a href="{{ url_for('dashboard.reminders', severity='all', device=filter_device) }}"
          class="btn btn-sm {% if filter_severity == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
-        全部 <span class="badge badge-secondary">{{ severity_counts.all }}</span>
+        全部 <span class="badge {% if filter_severity == 'all' %}badge-light text-dark{% else %}badge-secondary{% endif %}">{{ severity_counts.all }}</span>
       </a>
       <a href="{{ url_for('dashboard.reminders', severity='danger', device=filter_device) }}"
          class="btn btn-sm {% if filter_severity == 'danger' %}btn-danger text-white{% else %}btn-outline-danger{% endif %}">
