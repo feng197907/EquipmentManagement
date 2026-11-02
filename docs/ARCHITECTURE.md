@@ -130,20 +130,26 @@ def create_app():
 | 模块 | 路由数 | 主要方法 |
 |------|--------|----------|
 | auth | 4 | GET, POST |
-| dashboard | 9 | GET, POST |
-| devices | 5 | GET, POST |
+| dashboard | 10 | GET, POST |
+| devices | 6 | GET, POST |
 | documents | 7 | GET, POST |
 | borrowing | 3 | GET, POST |
 | approvals | 2 | GET, POST |
 | device_changes | 2 | GET, POST |
-| maintenance | 17 | GET, POST, PUT, DELETE |
-| spare_part | 13 | GET, POST, PUT |
+| maintenance | 18 | GET, POST, PUT, DELETE |
+| spare_part | 16 | GET, POST, PUT |
 | users | 5 | GET, POST |
 | settings | 1 | GET, POST |
 | password | 3 | GET, POST |
 | search | 2 | GET, POST |
 | esign | 5 | GET, POST |
-| **总计** | **78** | |
+| **小计** | **84** | |
+| `/healthz` | 1 | GET（直接注册在 app 上，不属任何蓝图） |
+| **总计** | **85** | |
+
+> 统计口径：`app.url_map` 中除 `static` 外的全部路由。
+> 另有一个 `blueprints/log_bp.py` 定义了 `/api/log/js-error`，但未在 `app.py`
+> 注册，因此不计入，目前也不可访问。
 
 ---
 

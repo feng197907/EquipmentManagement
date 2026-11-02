@@ -897,4 +897,4 @@ POST /admin/settings
 
 ---
 
-*本文档基于系统 v2.0 生成。API 路由总数：78 条。如有疑问，请查阅 [架构文档](./ARCHITECTURE.md)。*
+*本文档基于系统 v2.0 生成，路由数按 `app.url_map`（除 static）核对为 85 条。如有疑问，请查阅 [架构文档](./ARCHITECTURE.md)。*

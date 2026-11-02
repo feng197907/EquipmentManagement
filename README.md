@@ -11,7 +11,7 @@
 
 **面向制药企业的 GMP 合规设备档案与文档管理系统**
 
-15 个业务模块 · 85 条路由 · 7 种角色权限 · 审计追踪与电子签名 · 响应式界面（手机可用）
+14 个业务模块 · 85 条路由 · 7 种角色权限 · 审计追踪与电子签名 · 响应式界面（手机可用）
 
 [快速开始](#快速开始) · [功能概览](#功能概览) · [技术栈](#技术栈) · [项目结构](#项目结构) · [上线发布](#上线发布) · [文档](#文档)
 
@@ -162,10 +162,11 @@ EquipmentManagement/
 │   ├── users.py              #   用户与权限
 │   ├── settings.py           #   系统设置
 │   ├── password.py           #   忘记密码 / 重置申请
-│   ├── search.py             #   全局搜索
-│   └── log_bp.py             #   审计日志
+│   └── search.py             #   全局搜索
 │
-├── models/                   # 数据访问层
+│   # 注：log_bp.py 定义了 /api/log/js-error（前端 JS 错误上报），
+│   #     但没有在 app.py 里 register_blueprint，当前是未启用的死代码
+│├── models/                   # 数据访问层
 │   ├── user.py
 │   ├── maintenance.py
 │   ├── spare_part.py
@@ -266,7 +267,6 @@ cd /data/EquipmentManagement
 | 🏗️ [架构文档](docs/ARCHITECTURE.md) | 开发者 | 分层设计、蓝图划分、数据层、权限模型 |
 | 💻 [开发指南](docs/DEVELOPMENT.md) | 贡献者 | 环境搭建、编码规范、测试 |
 | 📡 [API 参考](docs/API_REFERENCE.md) | 集成开发者 | 路由参数、请求响应示例 |
-| 📜 [部署指南](docs/DEPLOYMENT.md) | — | ⚠️ 部分内容已由 Docker 方案取代，systemd 章节仅作历史参考 |
 
 ---
 

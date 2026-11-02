@@ -140,21 +140,30 @@ EquipmentManagement/
 │   ├── test_esign.py         #   电子签名测试
 │   └── test_maintenance.py   #   维护模块测试
 │
-├── scripts/                  # 运维脚本
+├── scripts/                  # 历史脚本（已停用，见下方说明）
 │   ├── webhook_server.py     #   GitHub Webhook 监听器
 │   └── webhook-deploy.sh     #   自动部署脚本
 │
-├── deploy/                   # 部署配置
-│   ├── dms.service           #   systemd 服务单元
-│   └── dms-webhook.service   #   Webhook 服务单元
+├── deploy/                   # 部署
+│   ├── compose-deploy.sh     #   一键发布（拉代码→建镜像→换容器→等健康）
+│   ├── status.sh             #   上线状态自检（只读，8 项）
+│   ├── nginx-http-direct.conf.example  # nginx 反代样例（HTTP 直连）
+│   ├── nginx-ssl.conf.example          # nginx 反代样例（HTTPS）
+│   ├── dms.service           #   ⚠️ 历史：systemd 单元，已由 Docker 取代
+│   └── dms-webhook.service   #   ⚠️ 历史：Webhook 服务单元，服务已停用
 │
 └── docs/                     # 文档
+    ├── 上线操作手册.md         #   发布/回滚/排错（运维必看）
     ├── ARCHITECTURE.md       #   架构文档
     ├── DEVELOPMENT.md        #   本文件
-    ├── DEPLOYMENT.md         #   部署指南
     ├── API_REFERENCE.md      #   API 参考
     └── 使用手册.md            #   用户手册
 ```
+
+> **关于 webhook 与 systemd**：这两套是 Docker 改造之前的上线方式。
+> 现在服务器上 `dms` 和 `dms-webhook` 两个 systemd 服务都是 `inactive`，
+> 发布统一走 `deploy/compose-deploy.sh`。相关文件保留仅为追溯，
+> 不要在正在用容器的机器上再 `systemctl start dms`，会抢占 `127.0.0.1:5000`。
 
 ---
 
