@@ -19,10 +19,10 @@
     <table class="table">
       <thead>
         <tr>
-          <th>设备编码</th>
+          <th class="col-hide-mobile">设备编码</th>
           <th>设备名称</th>
-          <th>维护类型</th>
-          <th>周期</th>
+          <th class="col-hide-mobile">维护类型</th>
+          <th class="col-hide-mobile">周期</th>
           <th>下次到期日</th>
           <th>操作</th>
         </tr>
@@ -30,15 +30,15 @@
       <tbody>
         {% for plan in plans %}
         <tr>
-          <td><code class="text-primary fw-medium">{{ plan['device_code'] }}</code></td>
+          <td class="col-hide-mobile"><code class="text-primary fw-medium">{{ plan['device_code'] }}</code></td>
           <td>{{ plan['device_name'] }}</td>
-          <td>
+          <td class="col-hide-mobile">
             {% if plan['maintenance_type'] == 'calibration' %}校准
             {% elif plan['maintenance_type'] == 'maintenance' %}保养
             {% elif plan['maintenance_type'] == 'inspection' %}巡检
             {% else %}{{ plan['maintenance_type'] }}{% endif %}
           </td>
-          <td>{{ plan['interval_days'] }} 天</td>
+          <td class="col-hide-mobile">{{ plan['interval_days'] }} 天</td>
           <td>{{ plan['next_due_date'] }}</td>
           <td>
             <a class="btn btn-sm btn-outline-primary"

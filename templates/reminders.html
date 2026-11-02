@@ -93,10 +93,10 @@
     <table class="table table-hover mb-0 align-middle">
       <thead class="table-light">
         <tr>
-          <th>设备编码</th>
+          <th class="col-hide-mobile">设备编码</th>
           <th>设备名称</th>
-          <th>文档名称</th>
-          <th>版本</th>
+          <th class="col-hide-mobile">文档名称</th>
+          <th class="col-hide-mobile">版本</th>
           <th>到期日期</th>
           <th>剩余天数</th>
           <th>状态</th>
@@ -106,9 +106,9 @@
       <tbody>
         {% for row in calibration_reminders %}
         <tr>
-          <td><span class="font-monospace">{{ row.device_code }}</span></td>
+          <td class="col-hide-mobile"><span class="font-monospace">{{ row.device_code }}</span></td>
           <td>{{ row.device_name }}</td>
-          <td>
+          <td class="col-hide-mobile">
             <div class="d-flex align-items-center gap-1">
               <span>{{ row.doc_name }}</span>
               {% if row.has_explicit_due %}
@@ -119,7 +119,7 @@
               {% endif %}
             </div>
           </td>
-          <td>v{{ row.version }}</td>
+          <td class="col-hide-mobile">v{{ row.version }}</td>
           {# 日期永远用 --text-primary 常规字重，告警只出现在「状态」列（§3.4-D 硬规则） #}
           <td><span class="tabular-nums">{{ row.due_date }}</span></td>
           <td>
@@ -185,9 +185,9 @@
     <table class="table table-hover mb-0 align-middle">
       <thead class="table-light">
         <tr>
-          <th>设备编码</th>
+          <th class="col-hide-mobile">设备编码</th>
           <th>设备名称</th>
-          <th>维护类型</th>
+          <th class="col-hide-mobile">维护类型</th>
           <th>计划日期</th>
           <th>状态</th>
           <th>操作</th>
@@ -196,9 +196,9 @@
       <tbody>
         {% for item in maintenance_reminders %}
         <tr>
-          <td><span class="font-monospace">{{ item.device_code }}</span></td>
+          <td class="col-hide-mobile"><span class="font-monospace">{{ item.device_code }}</span></td>
           <td>{{ item.device_name }}</td>
-          <td>{{ item.maintenance_type_label or item.maintenance_type }}</td>
+          <td class="col-hide-mobile">{{ item.maintenance_type_label or item.maintenance_type }}</td>
           {# 同上：日期不加色，语义只由「状态」列承载 #}
           <td><span class="tabular-nums">{{ item.due_date_str }}</span></td>
           <td>

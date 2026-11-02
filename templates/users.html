@@ -76,10 +76,10 @@
     <table class="table">
       <thead>
         <tr>
-          <th>ID</th>
+          <th class="col-hide-mobile">ID</th>
           <th>用户名</th>
           <th>角色</th>
-          <th>菜单权限</th>
+          <th class="col-hide-mobile">菜单权限</th>
           <th>状态</th>
           <th>操作</th>
         </tr>
@@ -87,7 +87,7 @@
       <tbody>
         {% for user in users %}
         <tr>
-          <td>
+          <td class="col-hide-mobile">
             <code class="text-muted">#{{ user.id }}</code>
           </td>
           <td>
@@ -112,7 +112,7 @@
               {{ role_label }}
             </span>
           </td>
-          <td>
+          <td class="col-hide-mobile">
             {% if user.role == 'admin' %}
             <span class="text-muted">全部权限</span>
             {% else %}

@@ -705,3 +705,471 @@
   border-color: rgba(255,255,255,0.6);
   color: #fff;
 }
+
+/* ============================================================
+   移动端可用性补丁（2026-11-02）
+   ------------------------------------------------------------
+   背景：手机上暴露出的三类问题
+     1) 页头按钮多时把标题挤成一字一行（.page-head-actions 原为 flex-shrink:0，
+        父级不换行）
+     2) 数据表真实宽度 771~1194px 塞在 364px 容器里，右侧列看不到也
+        没有任何"可以横向滑动"的提示
+     3) 快捷入口在 <768px 被强制单列，3 个入口占掉 309px 竖向空间
+   本段追加在文件末尾：同特异性下最后加载者优先，无需 !important。
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* ---------- 页头：标题独占一行，按钮组下移并按需换行 ---------- */
+  .page-head {
+    margin-bottom: var(--space-4);
+  }
+
+  .page-head-main {
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .page-head-title {
+    font-size: 18px;
+    line-height: 1.35;
+    flex: 1 1 100%;            /* 独占整行，杜绝被按钮挤成竖排 */
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .page-head-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+    gap: var(--space-2);
+  }
+
+  .page-head-actions > .btn,
+  .page-head-actions > a.btn {
+    flex: 1 1 auto;
+    min-width: 104px;          /* 一行放 2~3 个，不出现"半个按钮" */
+    justify-content: center;
+  }
+
+  .page-head-description {
+    font-size: 13px;
+    max-width: none;
+  }
+
+  /* ---------- 快捷入口：3 个并排一行，不再竖排占满屏 ---------- */
+  .quick-actions-panel {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .quick-action-btn {
+    padding: 10px 4px;
+    gap: 5px;
+    border-radius: var(--border-radius);
+  }
+
+  .quick-action-btn span {
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .quick-action-btn svg,
+  .quick-action-btn i {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* ---------- 数据表 ----------
+     手机上不可能一屏放下 6~10 列，策略是：
+       · 压缩密度，一屏尽量多显示
+       · 首列吸附，横向滑动时知道自己在看哪一行
+       · 左右两侧做滚动阴影，明确提示"右边还有内容"
+       · 次要列用 .col-hide-mobile 隐藏（模板里按需加）
+     注意选择器带 table 前缀：mobile.css 里原有的 `table th, table td`
+     特异性是 (0,0,2)，压不过 pages-enhanced.css 的 `.data-table td` (0,1,1)，
+     这就是之前小屏间距规则一直不生效的原因。
+  ------------------------------------------------ */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    /* 滚动阴影：local 层随内容滚动，形成"边缘还有内容"的视觉提示 */
+    background:
+      linear-gradient(to right, var(--bg-card) 30%, rgba(255, 255, 255, 0)) left center / 40px 100% no-repeat local,
+      linear-gradient(to left, var(--bg-card) 30%, rgba(255, 255, 255, 0)) right center / 40px 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%, rgba(15, 23, 42, 0.14), transparent) left center / 14px 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%, rgba(15, 23, 42, 0.14), transparent) right center / 14px 100% no-repeat scroll;
+  }
+
+  .table-responsive > table,
+  .table-responsive > table.data-table,
+  .table-responsive > table.table {
+    font-size: 13px;
+    margin-bottom: 0;
+  }
+
+  /* 表头稍大一点点，视觉上与数据行区分 */
+  .table-responsive > table > thead > tr > th,
+  .table-responsive > table.data-table > thead > tr > th,
+  .table-responsive > table.table > thead > tr > th {
+    font-size: 12px;
+    padding: 9px 10px;
+    white-space: nowrap;
+  }
+
+  .table-responsive > table > tbody > tr > td,
+  .table-responsive > table.data-table > tbody > tr > td,
+  .table-responsive > table.table > tbody > tr > td {
+    font-size: 13px;
+    padding: 9px 10px;
+    line-height: 1.45;
+  }
+
+  /* 首列吸附：横向滑动时行标识不丢 */
+  .table-responsive > table > thead > tr > th:first-child,
+  .table-responsive > table > tbody > tr > td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--bg-card);
+    box-shadow: 1px 0 0 var(--border-color);
+  }
+
+  .table-responsive > table > thead > tr > th:first-child {
+    background: var(--bg-subtle);
+    z-index: 3;
+  }
+
+  /* 次要列默认隐藏，模板里给 <th>/<td> 加 .col-hide-mobile 即可 */
+  .col-hide-mobile {
+    display: none !important;
+  }
+
+  /* 表格下方的操作/说明文字留白收紧 */
+  .data-table-card {
+    border-radius: var(--border-radius);
+  }
+
+  .data-table-header {
+    padding: 12px 12px 10px;
+  }
+}
+
+/* 超小屏：3 列快捷入口会太挤，退回 2 列 */
+@media (max-width: 360px) {
+  .quick-actions-panel {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============================================================
+   移动端补丁 第二轮
+   ------------------------------------------------------------
+   1) pages-enhanced.css 在 ≤768px 把 .table-actions 改成 column，
+      导致「操作」列 3 个图标竖排、行高撑到 104px。列少了之后横排放得下，
+      改回 row。
+   2) 设备看板 / 用户管理 / 维护记录用的是 .table-wrapper 而不是
+      .table-responsive，第一轮的密度、吸附列、滚动阴影都没覆盖到。
+      这里用 :is() 一次性覆盖两种容器。
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .table-actions {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .table-actions .table-action-btn,
+  .table-actions .btn-icon {
+    flex: 0 0 auto;
+  }
+
+  :is(.table-responsive, .table-wrapper) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :is(.table-responsive, .table-wrapper) > table {
+    font-size: 13px;
+    margin-bottom: 0;
+  }
+
+  :is(.table-responsive, .table-wrapper) > table > thead > tr > th {
+    font-size: 12px;
+    padding: 9px 10px;
+    white-space: nowrap;
+  }
+
+  :is(.table-responsive, .table-wrapper) > table > tbody > tr > td {
+    font-size: 13px;
+    padding: 9px 10px;
+    line-height: 1.45;
+    vertical-align: middle;
+  }
+
+  /* 首列吸附（.table-wrapper 容器同样生效） */
+  :is(.table-responsive, .table-wrapper) > table > thead > tr > th:first-child,
+  :is(.table-responsive, .table-wrapper) > table > tbody > tr > td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--bg-card);
+    box-shadow: 1px 0 0 var(--border-color);
+  }
+
+  :is(.table-responsive, .table-wrapper) > table > thead > tr > th:first-child {
+    background: var(--bg-subtle);
+    z-index: 3;
+  }
+
+  /* 单个按钮不要拉满整行；多个按钮自然宽度换行即可 */
+  .page-head-actions > .btn,
+  .page-head-actions > a.btn {
+    flex: 0 1 auto;
+    min-width: 104px;
+  }
+}
+
+/* ============================================================
+   移动端补丁 第三轮：统计卡片
+   ------------------------------------------------------------
+   .stat-grid 的 --stat-min 带 max(220px, ...) 下限，390px 宽的屏幕上
+   只放得下 1 列，7 张状态卡竖着排要占 700px，用户滚半天看不到表格。
+   小屏固定两列 + 压缩卡片内边距。
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .stat-grid {
+    --stat-min: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .stat-grid > .stat-card {
+    min-height: 68px;
+    padding: 10px 12px;
+    gap: 8px;
+    border-radius: var(--border-radius);
+  }
+
+  .stat-card .stat-icon {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 8px;
+  }
+
+  .stat-card .stat-icon svg,
+  .stat-card .stat-icon i {
+    width: 16px;
+    height: 16px;
+  }
+
+  .stat-card .stat-value {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .stat-card .stat-label {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+}
+
+/* 超小屏（iPhone SE 320px）：统计卡回到单列，避免数字被截断 */
+@media (max-width: 340px) {
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   移动端补丁 第四轮：设备详情页
+   ------------------------------------------------------------
+   1) .device-header-card 是 space-between 的横向 flex，手机上信息块和
+      操作按钮互相挤压，按钮宽度只剩 ~40px，导致「上传文档」被拆成
+      一字一行。改为纵向堆叠，按钮平分一行。
+   2) .doc-category-grid 的 minmax(240px,1fr) 在 366px 宽下只剩 1 列，
+      12 个文档分类竖排三屏。小屏固定两列。
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* 按钮文字一律不拆行：宁可整体换行/横向溢出，也不要一字一行 */
+  .btn,
+  .btn-sm,
+  .btn-upload,
+  .btn-edit,
+  .table-actions .btn {
+    white-space: nowrap;
+  }
+
+  .device-header-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+
+  .device-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .device-header-actions > a,
+  .device-header-actions > button {
+    flex: 1 1 auto;
+    min-width: 92px;
+    justify-content: center;
+    padding: 10px 8px;
+  }
+
+  /* 12 个文档分类：小屏两列，一屏能看到大部分 */
+  .doc-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .doc-category-card {
+    padding: 12px 10px;
+  }
+
+  .doc-category-name,
+  .doc-category-title {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  /* 详情页 tab 条见文件末尾「第六轮」补丁（真实类名 .page-tabs） */
+}
+
+/* 超小屏：分类卡回到单列 */
+@media (max-width: 340px) {
+  .doc-category-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   移动端补丁 第五轮：文档分类卡片改为方格
+   ------------------------------------------------------------
+   卡片内部是「48px 图标 + flex:1 文字 + 展开箭头」的横排，二列布局下
+   文字区被压到 16px（一个汉字宽），出现"一列一个字"的竖排。
+   窄屏改成「图标在上、名称在下」的方格，并允许名称省略号截断。
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .category-header {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 6px;
+    padding: 12px 8px;
+  }
+
+  .category-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .category-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .category-info {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .category-name {
+    font-size: 13px;
+    line-height: 1.3;
+    margin: 0 0 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .category-count {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .category-toggle {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+  }
+
+  .category-toggle svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* ============================================================
+   移动端补丁 第六轮
+   ------------------------------------------------------------
+   1) 设备详情页标签条的真实类名是 .page-tabs > .tab-item
+      （pages.css:258 / 265）。前面几轮写的 .device-tabs / .device-tab-nav
+      在模板里根本不存在，等于没生效，所以「维护计划 / 维护历史」被压成两行。
+      这里换成真实选择器：不换行 + 横向可滚。
+   2) ≤480px 再降一档单元格密度。提醒中心（505px）、用户管理（454px）
+      只差几十像素就能进一屏，13px→12.5px、padding 10→8 可省下约 60px。
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .page-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .page-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .page-tabs > .tab-item {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    gap: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .page-tabs > .tab-item svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  :is(.table-responsive, .table-wrapper) > table {
+    font-size: 12.5px;
+  }
+
+  :is(.table-responsive, .table-wrapper) > table > thead > tr > th,
+  :is(.table-responsive, .table-wrapper) > table > tbody > tr > td {
+    padding: 8px;
+  }
+
+  :is(.table-responsive, .table-wrapper) > table > tbody > tr > td {
+    font-size: 12.5px;
+  }
+
+  /* 紧凑徽标，避免「已逾期 / 即将到期」把状态列撑宽 */
+  :is(.table-responsive, .table-wrapper) > table .badge {
+    padding: 2px 6px;
+    font-size: 11px;
+  }
+}

@@ -99,10 +99,10 @@
       <table class="data-table" id="devicesTable">
         <thead>
           <tr>
-            <th>设备编码</th>
+            <th class="col-hide-mobile">设备编码</th>
             <th>设备名称</th>
-            <th>型号</th>
-            <th>位置</th>
+            <th class="col-hide-mobile">型号</th>
+            <th class="col-hide-mobile">位置</th>
             <th>状态</th>
             <th>操作</th>
           </tr>
@@ -110,18 +110,20 @@
         <tbody>
           {% for device in devices %}
           <tr class="{% if device.status != 'active' %}row-inactive{% endif %}">
-            <td class="table-cell-mono">{{ device.device_code }}</td>
+            <td class="table-cell-mono col-hide-mobile">
+              {{ device.device_code }}
+            </td>
             <td>
               <div class="table-cell-primary">{{ device.device_name }}</div>
             </td>
-            <td>
+            <td class="col-hide-mobile">
               {% if device.model %}
               <span class="model-tag">{{ device.model }}</span>
               {% else %}
               <span class="text-muted">-</span>
               {% endif %}
             </td>
-            <td>
+            <td class="col-hide-mobile">
               {% if device.location %}
               <span class="location-tag">
                 <i data-lucide="map-pin"></i>

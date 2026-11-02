@@ -16,13 +16,13 @@
           <th>操作人</th>
           <th>时间</th>
           <th>操作</th>
-          <th>目标类型</th>
-          <th>目标ID</th>
-          <th>详情</th>
-          <th>操作前值</th>
-          <th>操作后值</th>
-          <th>修改原因</th>
-          <th>IP</th>
+          <th class="col-hide-mobile">目标类型</th>
+          <th class="col-hide-mobile">目标ID</th>
+          <th class="col-hide-mobile">详情</th>
+          <th class="col-hide-mobile">操作前值</th>
+          <th class="col-hide-mobile">操作后值</th>
+          <th class="col-hide-mobile">修改原因</th>
+          <th class="col-hide-mobile">IP</th>
         </tr>
       </thead>
       <tbody>
@@ -32,13 +32,13 @@
           <td>{{ row.user }}</td>
           <td class="col-date">{{ row.log_time }}</td>
           <td>{{ row.action }}</td>
-          <td>{{ row.target_type }}</td>
-          <td>{{ row.target_id or '-' }}</td>
-          <td>{{ row.details or '-' }}</td>
-          <td>{{ row.before_value or '-' }}</td>
-          <td>{{ row.after_value or '-' }}</td>
-          <td>{{ row.reason or '-' }}</td>
-          <td>{{ row.ip_address or '-' }}</td>
+          <td class="col-hide-mobile">{{ row.target_type }}</td>
+          <td class="col-hide-mobile">{{ row.target_id or '-' }}</td>
+          <td class="col-hide-mobile">{{ row.details or '-' }}</td>
+          <td class="col-hide-mobile">{{ row.before_value or '-' }}</td>
+          <td class="col-hide-mobile">{{ row.after_value or '-' }}</td>
+          <td class="col-hide-mobile">{{ row.reason or '-' }}</td>
+          <td class="col-hide-mobile">{{ row.ip_address or '-' }}</td>
         </tr>
         {% else %}
 <tr>

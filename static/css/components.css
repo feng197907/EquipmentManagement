@@ -1242,6 +1242,7 @@ textarea.form-control {
 .page-head-main {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;                 /* 按钮多时整体换行，避免把标题挤成一字一行 */
   gap: var(--space-3);
   min-height: 28px;
 }
@@ -1249,6 +1250,7 @@ textarea.form-control {
 .page-head-title {
   display: flex;
   align-items: center;
+  flex: 0 0 auto;
   gap: var(--space-3);
   margin: 0;
   font-size: var(--text-xl);          /* 20px */
@@ -1256,6 +1258,7 @@ textarea.form-control {
   line-height: var(--leading-snug);
   color: var(--text-primary);
   letter-spacing: 0;
+  min-width: 0;
 }
 
 /* 标题前缀图标：按 §7.4 应移除，此处仅做「若存在也保持线性尺寸」的兜底 */
@@ -1271,9 +1274,11 @@ textarea.form-control {
 .page-head-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;                 /* 按钮自身也允许换行，窄屏下不撑破容器 */
+  justify-content: flex-end;
   gap: var(--space-2);   /* 主次按钮 gap 8px */
   margin-left: auto;
-  flex-shrink: 0;
+  min-width: 0;
 }
 
 /* ④ 分隔线：仅列表页/表格页保留（.is-board 去掉） */

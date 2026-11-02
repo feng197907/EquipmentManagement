@@ -111,10 +111,10 @@
     <table class="table">
       <thead>
         <tr>
-          <th>编码</th>
+          <th class="col-hide-mobile">编码</th>
           <th>名称</th>
-          <th>型号</th>
-          <th>位置</th>
+          <th class="col-hide-mobile">型号</th>
+          <th class="col-hide-mobile">位置</th>
           <th>状态</th>
           <th>操作</th>
         </tr>
@@ -122,12 +122,12 @@
       <tbody>
         {% for d in devices %}
         <tr>
-          <td>
+          <td class="col-hide-mobile">
             <code class="text-primary fw-medium">{{ d.device_code }}</code>
           </td>
           <td>{{ d.device_name }}</td>
-          <td class="text-secondary">{{ d.model }}</td>
-          <td>
+          <td class="text-secondary col-hide-mobile">{{ d.model }}</td>
+          <td class="col-hide-mobile">
             <span class="d-flex align-items-center gap-1">
               <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
               {{ d.location }}
