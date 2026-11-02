@@ -36,5 +36,4 @@ docs
 deploy
 migrate
 scripts
-openapi.yaml
 *.md

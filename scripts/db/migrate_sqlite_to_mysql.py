@@ -1,22 +1,32 @@
-# SQLite → MySQL 数据迁移脚本
+# SQLite → MySQL 数据迁移脚本（一次性工具）
+#
+# 用法（在项目根目录执行）：
+#   py -3 scripts/db/migrate_sqlite_to_mysql.py
+# 连接参数全部从 .env 读取，脚本内不再写死任何密码。
+import os
+import sys
+
 from dotenv import load_dotenv
-load_dotenv()
+
+# 项目根目录：scripts/db/ 往上两级
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+load_dotenv(os.path.join(PROJECT_ROOT, '.env'))
 
 import sqlite3
 import pymysql
 import json
 import re
 
-# SQLite 数据库路径
-SQLITE_DB = 'dms.db'
+# 源 SQLite 文件，默认项目根目录下的 equipment.db，可用 SQLITE_DB 覆盖
+SQLITE_DB = os.environ.get('SQLITE_DB', os.path.join(PROJECT_ROOT, 'equipment.db'))
 
-# MySQL 连接配置
+# MySQL 连接配置，与 database.py 用同一套环境变量
 MYSQL_CONFIG = {
-    'host': 'localhost',
-    'port': 3306,
-    'user': 'root',
-    'password': 'Mysql@2025Root',
-    'database': 'dms_db',
+    'host': os.environ.get('MYSQL_HOST', 'localhost'),
+    'port': int(os.environ.get('MYSQL_PORT', 3306)),
+    'user': os.environ.get('MYSQL_USER', 'root'),
+    'password': os.environ.get('MYSQL_PASSWORD', ''),
+    'database': os.environ.get('MYSQL_DATABASE', 'dms_db'),
     'charset': 'utf8mb4',
 }
 

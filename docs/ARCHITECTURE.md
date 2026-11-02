@@ -148,8 +148,8 @@ def create_app():
 | **总计** | **85** | |
 
 > 统计口径：`app.url_map` 中除 `static` 外的全部路由。
-> 另有一个 `blueprints/log_bp.py` 定义了 `/api/log/js-error`，但未在 `app.py`
-> 注册，因此不计入，目前也不可访问。
+> 其中 4 个 URL 上挂了多个端点（同一路径的 GET / POST 分开注册），
+> 所以按端点计数是 85、按 URL 去重是 81。
 
 ---
 

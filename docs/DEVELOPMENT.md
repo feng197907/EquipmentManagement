@@ -132,7 +132,6 @@ EquipmentManagement/
 │   ├── file_utils.py         #   文件处理
 │   ├── helpers.py            #   辅助函数
 │   ├── logging_config.py     #   日志配置
-│   └── request_logger.py     #   请求日志
 │
 ├── tests/                    # 测试文件
 │   ├── test_api.py           #   API 集成测试
@@ -140,9 +139,12 @@ EquipmentManagement/
 │   ├── test_esign.py         #   电子签名测试
 │   └── test_maintenance.py   #   维护模块测试
 │
-├── scripts/                  # 历史脚本（已停用，见下方说明）
-│   ├── webhook_server.py     #   GitHub Webhook 监听器
-│   └── webhook-deploy.sh     #   自动部署脚本
+├── scripts/                  # 一次性/历史脚本
+│   ├── db/                   #   数据库迁移工具（一次性，用完即可）
+│   │   ├── import_mysql.py           # 从 sqlite_export.json 导入 MySQL
+│   │   └── migrate_sqlite_to_mysql.py # SQLite 整库迁到 MySQL
+│   ├── webhook_server.py     #   GitHub Webhook 监听器（已停用，见下方说明）
+│   └── webhook-deploy.sh     #   自动部署脚本（同上）
 │
 ├── deploy/                   # 部署
 │   ├── compose-deploy.sh     #   一键发布（拉代码→建镜像→换容器→等健康）
@@ -157,7 +159,8 @@ EquipmentManagement/
     ├── ARCHITECTURE.md       #   架构文档
     ├── DEVELOPMENT.md        #   本文件
     ├── API_REFERENCE.md      #   API 参考
-    └── 使用手册.md            #   用户手册
+    ├── 使用手册.md            #   用户手册
+    └── PRD-2026-05-11.md     #   产品需求文档（2026-05 版）
 ```
 
 > **关于 webhook 与 systemd**：这两套是 Docker 改造之前的上线方式。

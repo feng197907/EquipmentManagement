@@ -163,9 +163,6 @@ EquipmentManagement/
 │   ├── settings.py           #   系统设置
 │   ├── password.py           #   忘记密码 / 重置申请
 │   └── search.py             #   全局搜索
-│
-│   # 注：log_bp.py 定义了 /api/log/js-error（前端 JS 错误上报），
-│   #     但没有在 app.py 里 register_blueprint，当前是未启用的死代码
 │├── models/                   # 数据访问层
 │   ├── user.py
 │   ├── maintenance.py
@@ -179,10 +176,9 @@ EquipmentManagement/
 │   ├── db_utils.py
 │   ├── logging_config.py     #   日志配置（app.log / error.log）
 │   ├── maintenance.py        #   校准/维护到期计算
-│   ├── request_logger.py
 │   └── helpers.py
 │
-├── templates/                # 33 个 Jinja2 模板
+├── templates/                # 35 个 Jinja2 模板
 │   └── components/           #   可复用组件（电子签名弹窗等）
 │
 ├── static/
@@ -197,8 +193,10 @@ EquipmentManagement/
 ├── deploy/                   # 部署脚本
 │   ├── compose-deploy.sh     #   一键发布（拉代码 → 建镜像 → 换容器 → 等健康）
 │   ├── status.sh             #   上线状态自检（只读，8 项）
-│   └── nginx-*.conf.example  #   nginx 反代样例
+│   ├── nginx-*.conf.example  #   nginx 反代样例
+│   └── dms*.service          #   systemd 单元（当前未启用，仅留作备选方案）
 │
+├── scripts/                  # 一次性脚本：db/ 数据迁移、webhook_* 自动部署
 ├── docs/                     # 文档（见下方「文档」一节）
 ├── tests/                    # 测试
 └── migrate/                  # 服务器搬家脚本
@@ -267,6 +265,7 @@ cd /data/EquipmentManagement
 | 🏗️ [架构文档](docs/ARCHITECTURE.md) | 开发者 | 分层设计、蓝图划分、数据层、权限模型 |
 | 💻 [开发指南](docs/DEVELOPMENT.md) | 贡献者 | 环境搭建、编码规范、测试 |
 | 📡 [API 参考](docs/API_REFERENCE.md) | 集成开发者 | 路由参数、请求响应示例 |
+| 📋 [产品需求文档](docs/PRD-2026-05-11.md) | 产品 / 需求方 | 2026-05 版 PRD，功能范围与验收口径 |
 
 ---
 

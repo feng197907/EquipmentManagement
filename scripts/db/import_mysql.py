@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
-MySQL 数据导入脚本
-从 sqlite_export.json 导入数据到 MySQL
+MySQL 数据导入脚本（一次性工具）
+从项目根目录的 sqlite_export.json 导入数据到 MySQL
+
+用法（在项目根目录执行）：
+    py -3 scripts/db/import_mysql.py
 """
 import json
 import os
-import sys
 
-# 添加当前目录到路径
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# 项目根目录：scripts/db/ 往上两级
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(os.path.join(PROJECT_ROOT, '.env'))
 
 import pymysql
 
@@ -55,8 +57,10 @@ def clear_tables(conn):
     cur.close()
 
 def import_data():
-    # 读取导出数据
-    export_path = os.path.join(os.path.dirname(__file__), 'sqlite_export.json')
+    # 读取导出数据（放在项目根目录）
+    export_path = os.environ.get(
+        'SQLITE_EXPORT', os.path.join(PROJECT_ROOT, 'sqlite_export.json')
+    )
     with open(export_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
