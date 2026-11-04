@@ -946,6 +946,14 @@ textarea.form-control {
 }
 
 .modal-overlay .modal {
+  /* 复位 Bootstrap 的同名 .modal：bootstrap.min.css 里 .modal 带着
+     position:fixed / top:0 / left:0 / width:100% / height:100%，
+     只覆盖 display 是不够的——弹窗会被钉在视口左上角、高度撑满，
+     overlay 的 flex 居中完全失效（表现就是"弹窗没居中、还顶到屏幕底"）。
+     position:relative + inset:auto 让它回到 overlay 的 flex 流里被居中。 */
+  position: relative;
+  inset: auto;
+  height: auto;
   display: flex;
   flex-direction: column;
   width: 100%;
