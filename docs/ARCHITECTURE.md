@@ -130,7 +130,7 @@ def create_app():
 | 模块 | 路由数 | 主要方法 |
 |------|--------|----------|
 | auth | 4 | GET, POST |
-| dashboard | 10 | GET, POST |
+| dashboard | 11 | GET, POST |
 | devices | 6 | GET, POST |
 | documents | 7 | GET, POST |
 | borrowing | 3 | GET, POST |
@@ -143,13 +143,13 @@ def create_app():
 | password | 3 | GET, POST |
 | search | 2 | GET, POST |
 | esign | 5 | GET, POST |
-| **小计** | **84** | |
+| **小计** | **85** | |
 | `/healthz` | 1 | GET（直接注册在 app 上，不属任何蓝图） |
-| **总计** | **85** | |
+| **总计** | **86** | |
 
 > 统计口径：`app.url_map` 中除 `static` 外的全部路由。
 > 其中 4 个 URL 上挂了多个端点（同一路径的 GET / POST 分开注册），
-> 所以按端点计数是 85、按 URL 去重是 81。
+> 所以按端点计数是 86、按 URL 去重是 82。
 
 ---
 

@@ -1,9 +1,16 @@
 import importlib
 
 # 看板与提醒 Blueprint
+from io import BytesIO
 from pathlib import Path
-from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
+from flask import (
+    Blueprint, current_app, flash, jsonify, redirect, render_template,
+    request, send_file, url_for,
+)
 from flask_login import current_user, login_required
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
 
 from config import DEVICE_STATUS_LABELS, DOC_STATUS_LABELS, ROLE_LABELS
 from database import get_db, get_system_setting
@@ -561,16 +568,204 @@ def maintenance_all():
     )
 
 
+# 导出列与页面表格列顺序一致：(字段名, 表头, 列宽)
+AUDIT_LOG_EXPORT_COLUMNS = (
+    ("user", "操作人", 16),
+    ("log_time", "时间", 20),
+    ("action", "操作", 22),
+    ("target_type", "目标类型", 16),
+    ("target_id", "目标ID", 12),
+    ("details", "详情", 40),
+    ("before_value", "操作前值", 30),
+    ("after_value", "操作后值", 30),
+    ("reason", "修改原因", 30),
+    ("ip_address", "IP", 18),
+)
+
+# 页面为避免一次渲染过多行只显示 500 条；导出不加这个上限
+AUDIT_LOG_PAGE_LIMIT = 500
+
+
+def _clean_audit_log_filters(args):
+    """把 URL 参数清洗成筛选条件，键名直接对应模板变量（页面回显与导出共用）。
+
+    日期只接受 YYYY-MM-DD，非法值丢弃并回显为空；目标类型先保留，
+    查询时再和表里实际出现过的值比对。所有值最终都走参数绑定，不拼 SQL。
+    """
+    def _valid_date(value):
+        if not value:
+            return False
+        try:
+            datetime.strptime(value, "%Y-%m-%d")
+            return True
+        except (ValueError, TypeError):
+            return False
+
+    start_date = (args.get("start_date") or "").strip()
+    end_date = (args.get("end_date") or "").strip()
+    return {
+        "filter_user": (args.get("user") or "").strip(),
+        "filter_target_type": (args.get("target_type") or "").strip(),
+        "start_date": start_date if _valid_date(start_date) else "",
+        "end_date": end_date if _valid_date(end_date) else "",
+    }
+
+
+def _audit_log_target_types(cur):
+    """下拉选项取自全表，不受当前筛选影响，否则筛选后其它类型会从列表里消失。"""
+    cur.execute(
+        "SELECT DISTINCT target_type FROM audit_logs "
+        "WHERE target_type IS NOT NULL AND target_type <> '' "
+        "ORDER BY target_type"
+    )
+    return [row["target_type"] for row in cur.fetchall()]
+
+
+def _build_audit_log_query(filters, valid_target_types, limit=None):
+    """生成 (sql, params)。条件全部参数绑定；limit 是内部整数，仅页面展示时用。"""
+    sql = "SELECT * FROM audit_logs WHERE 1 = 1"
+    params = []
+    if filters["filter_user"]:
+        sql += " AND user LIKE %s"          # 模糊匹配，和文档检索页保持一致
+        params.append(f"%{filters['filter_user']}%")
+    if filters["start_date"]:
+        sql += " AND DATE(log_time) >= DATE(%s)"
+        params.append(filters["start_date"])
+    if filters["end_date"]:
+        sql += " AND DATE(log_time) <= DATE(%s)"
+        params.append(filters["end_date"])
+    if filters["filter_target_type"] in valid_target_types:
+        sql += " AND target_type = %s"      # 精确匹配，值来自全表实际枚举
+        params.append(filters["filter_target_type"])
+    # 同一秒内可能有多条，补 id 让顺序稳定；GMP 追溯要求结果可复现
+    sql += " ORDER BY log_time DESC, id DESC"
+    if limit:
+        sql += f" LIMIT {int(limit)}"
+    return sql, params
+
+
+def _load_audit_logs(filters, limit=None):
+    """按筛选条件查询，返回 (rows, target_types)。
+
+    页面与导出共用这一处查询，保证「导出的筛选结果」和「页面上看到的结果」
+    条件完全一致；未知 target_type 会被清空，手工构造 URL 也带不进畸形条件。
+    """
+    conn = get_db()
+    cur = conn.cursor()
+    try:
+        target_types = _audit_log_target_types(cur)
+        if filters["filter_target_type"] not in target_types:
+            filters["filter_target_type"] = ""
+        sql, params = _build_audit_log_query(filters, target_types, limit=limit)
+        cur.execute(sql, params)
+        rows = cur.fetchall()
+    finally:
+        conn.close()
+    return rows, target_types
+
+
+def _excel_cell(value):
+    """把数据库值转成可安全写入 xlsx 的文本。
+
+    审计日志里有用户输入（详情/修改前后值），需要清掉控制字符并限制长度，
+    否则 openpyxl 会抛 IllegalCharacterError 或生成超过 Excel 上限的单元格。
+    """
+    if value is None or value == "":
+        return "-"
+    text = str(value)
+    text = "".join(ch if ch >= " " or ch in "\n\t" else " " for ch in text)
+    if len(text) > 32000:
+        text = text[:32000] + "…（已截断）"
+    return text
+
+
 @dashboard_bp.route("/audit_log")
 @admin_required
 def audit_log():
-    """审计日志"""
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM audit_logs ORDER BY log_time DESC LIMIT 500")
-    rows = cur.fetchall()
-    conn.close()
-    return render_template("audit_log.html", rows=rows)
+    """审计日志：按操作人、时间范围、目标类型筛选（只读，管理员可见）。"""
+    filters = _clean_audit_log_filters(request.args)
+    rows, target_types = _load_audit_logs(filters, limit=AUDIT_LOG_PAGE_LIMIT)
+
+    return render_template(
+        "audit_log.html",
+        rows=rows,
+        target_types=target_types,
+        result_limit=AUDIT_LOG_PAGE_LIMIT,
+        # 导出按钮的展示态；真正的权限校验在服务端由 @admin_required 执行
+        can_export=bool(current_user.is_authenticated and current_user.is_admin),
+        **filters,
+    )
+
+
+@dashboard_bp.route("/audit_log/export")
+@admin_required
+def export_audit_log():
+    """导出审计日志为 xlsx。
+
+    scope=filtered：复用页面上的筛选条件；
+    scope=all：忽略筛选条件导出全表。
+    页面有 500 条展示上限，导出不加 LIMIT，保证「导出全部」是真正的全部。
+    前端 disabled 只是展示态，admin 权限由本路由的装饰器在服务端强制校验。
+    """
+    scope = request.args.get("scope", "filtered")
+    if scope not in ("filtered", "all"):
+        scope = "filtered"
+
+    filters = _clean_audit_log_filters(request.args)
+    if scope == "all":
+        filters = _clean_audit_log_filters({})
+    rows, _ = _load_audit_logs(filters)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "审计日志"
+
+    headers = [label for _, label, _ in AUDIT_LOG_EXPORT_COLUMNS]
+    ws.append(headers)
+    thin = Side(style="thin", color="D0D7DE")
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    for row in rows:
+        ws.append([_excel_cell(row[key]) for key, _, _ in AUDIT_LOG_EXPORT_COLUMNS])
+
+    # 强制按文本写入，避免以 = + - @ 开头的用户输入被 Excel 当成公式执行
+    if ws.max_row >= 2:
+        for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+            for cell in row:
+                cell.data_type = "s"
+                cell.border = Border(left=thin, right=thin, top=thin, bottom=thin)
+                cell.alignment = Alignment(vertical="center", wrap_text=True)
+
+    for idx, (_, _, width) in enumerate(AUDIT_LOG_EXPORT_COLUMNS, start=1):
+        ws.column_dimensions[get_column_letter(idx)].width = width
+    ws.freeze_panes = "A2"
+    ws.auto_filter.ref = f"A1:{get_column_letter(len(AUDIT_LOG_EXPORT_COLUMNS))}{ws.max_row}"
+
+    # 导出动作本身也留痕，便于 GMP 追溯「谁把日志导走了」。
+    # 放在查询之后，本次导出的文件里不会混入这条自身记录。
+    log_action(
+        current_user.username,
+        "export_audit_log",
+        "audit_log",
+        None,
+        f"导出审计日志：{'全部' if scope == 'all' else '筛选结果'}，共 {len(rows)} 条",
+    )
+
+    prefix = "audit_log_all" if scope == "all" else "audit_log_filtered"
+    filename = f"{prefix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(
+        output,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name=filename,
+    )
 
 
 @dashboard_bp.route("/add_device", methods=["GET", "POST"])

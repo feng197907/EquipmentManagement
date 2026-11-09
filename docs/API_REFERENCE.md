@@ -116,9 +116,22 @@ GET /reminders
 
 ```
 GET /audit_log
+GET /audit_log/export
 ```
 
-**权限**：`audit_log`
+**权限**：`audit_log`（仅 admin）
+
+`/audit_log` 支持 `user` / `start_date` / `end_date` / `target_type` 四个筛选参数，页面最多显示 500 条。
+
+`/audit_log/export` 返回 `.xlsx` 附件：
+
+| 参数 | 取值 | 说明 |
+|------|------|------|
+| `scope` | `filtered`（默认） | 复用页面筛选参数，导出筛选结果 |
+| `scope` | `all` | 忽略筛选参数，导出全部日志 |
+| `user` / `start_date` / `end_date` / `target_type` | 同页面 | 仅 `scope=filtered` 时生效 |
+
+导出不受页面 500 条上限限制；非 admin 请求会被服务端拒绝。
 
 ---
 
@@ -897,4 +910,4 @@ POST /admin/settings
 
 ---
 
-*本文档基于系统 v2.0 生成，路由数按 `app.url_map`（除 static）核对为 85 条。如有疑问，请查阅 [架构文档](./ARCHITECTURE.md)。*
+*本文档基于系统 v2.0 生成，路由数按 `app.url_map`（除 static）核对为 86 条。如有疑问，请查阅 [架构文档](./ARCHITECTURE.md)。*

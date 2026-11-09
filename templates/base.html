@@ -15,13 +15,13 @@
   <script src="{{ url_for('static', filename='vendor/lucide.min.js') }}"></script>
 
   <!-- Custom Styles -->
-  <link href="{{ url_for('static', filename='css/variables.css') }}?v=7" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/base.css') }}?v=7" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/layout.css') }}?v=7" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/components.css') }}?v=7" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/pages.css') }}?v=7" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/pages-enhanced.css') }}?v=7" rel="stylesheet">
-  <link href="{{ url_for('static', filename='css/mobile.css') }}?v=7" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/variables.css') }}?v=8" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/base.css') }}?v=8" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/layout.css') }}?v=8" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/components.css') }}?v=8" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/pages.css') }}?v=8" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/pages-enhanced.css') }}?v=8" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/mobile.css') }}?v=8" rel="stylesheet">
   {% block head %}{% endblock %}
 </head>
 <body data-user-is-admin="{{ 'true' if current_user.is_authenticated and current_user.is_admin else 'false' }}">

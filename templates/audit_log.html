@@ -8,6 +8,79 @@
   <hr class="page-head-divider">
   <p class="page-head-description">系统全部关键操作留痕，供 GMP 审计追溯，只读</p>
 </div>
+
+{# 顶部筛选：操作人 / 时间范围 / 目标类型。GET 提交，条件可直接收藏或分享链接 #}
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <form method="get" id="auditLogFilterForm">
+      <div class="search-row">
+        <div class="form-group mb-0">
+          <label class="form-label" for="filterUser">操作人</label>
+          <input class="form-control" id="filterUser" name="user"
+                 value="{{ filter_user }}" placeholder="按操作人模糊搜索">
+        </div>
+
+        <div class="form-group mb-0">
+          <label class="form-label">时间范围</label>
+          <div class="d-flex align-items-center gap-2">
+            <input class="form-control" type="date" name="start_date"
+                   value="{{ start_date }}" aria-label="开始日期">
+            <span class="text-muted flex-shrink-0">至</span>
+            <input class="form-control" type="date" name="end_date"
+                   value="{{ end_date }}" aria-label="结束日期">
+          </div>
+        </div>
+
+        <div class="form-group mb-0">
+          <label class="form-label" for="filterTargetType">目标类型</label>
+          <select class="form-select" id="filterTargetType" name="target_type">
+            <option value="">全部类型</option>
+            {% for item in target_types %}
+            <option value="{{ item }}" {% if filter_target_type == item %}selected{% endif %}>{{ item }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="search-actions audit-export-actions">
+        <button class="btn btn-primary" type="submit">
+          <i data-lucide="search"></i>
+          查询
+        </button>
+        <a href="{{ url_for('dashboard.audit_log') }}" class="btn btn-outline-secondary">
+          <i data-lucide="rotate-ccw"></i>
+          重置
+        </a>
+        <span class="text-muted small ms-auto">
+          共 {{ rows|length }} 条{% if rows|length >= result_limit %}（最多显示 {{ result_limit }} 条，按时间倒序）{% endif %}
+        </span>
+
+        {# formaction 让同一张筛选表单直接提交到导出路由，带上全部筛选参数 #}
+        <button class="btn btn-export" type="submit"
+                formaction="{{ url_for('dashboard.export_audit_log') }}"
+                name="scope" value="filtered"
+                {% if can_export %}title="导出当前筛选结果（不受 500 条展示上限限制）"{% else %}disabled aria-disabled="true" title="仅管理员可导出审计日志"{% endif %}>
+          <i data-lucide="download"></i>
+          导出筛选结果
+        </button>
+        <button class="btn btn-export" type="submit"
+                formaction="{{ url_for('dashboard.export_audit_log') }}"
+                name="scope" value="all"
+                {% if can_export %}title="忽略筛选条件，导出全部审计日志"{% else %}disabled aria-disabled="true" title="仅管理员可导出审计日志"{% endif %}>
+          <i data-lucide="file-down"></i>
+          导出全部
+        </button>
+      </div>
+      {% if not can_export %}
+      <p class="text-muted small mt-2 mb-0">
+        <i data-lucide="lock" class="align-text-bottom"></i>
+        导出功能仅管理员可用，当前账号的导出按钮为禁用状态。
+      </p>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
 <div class="card shadow-sm">
   <div class="table-responsive">
     <table class="table table-hover mb-0">

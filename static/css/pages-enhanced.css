@@ -170,6 +170,30 @@
   color: var(--text-primary) !important;
 }
 
+/* 审计日志：导出按钮 + 禁用态。
+   .search-actions .btn 把文字强制成白色，这里用更高特异性把 outline 绿改回来 */
+.audit-export-actions {
+  flex-wrap: wrap;
+}
+
+.search-actions .btn.btn-export {
+  background: var(--bg-card);
+  border-color: #198754;
+  color: #198754 !important;
+}
+
+.search-actions .btn.btn-export:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: #198754;
+  color: #fff !important;
+}
+
+.search-actions .btn:disabled,
+.search-actions .btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* 快捷筛选标签 */
 .filter-tags {
   display: flex;
