@@ -700,19 +700,14 @@ def audit_log():
 def export_audit_log():
     """导出审计日志为 xlsx。
 
-    scope=filtered：复用页面上的筛选条件；
-    scope=all：忽略筛选条件导出全表。
-    页面有 500 条展示上限，导出不加 LIMIT，保证「导出全部」是真正的全部。
+    单个按钮自动判断范围：筛选参数全空时导出全表，只要带了任一有效筛选条件
+    就按条件导出筛选结果。页面有 500 条展示上限，导出不加 LIMIT。
     本路由由 @admin_required 保护：直接输入 URL 也进不来，不依赖页面按钮是否可见。
     """
-    scope = request.args.get("scope", "filtered")
-    if scope not in ("filtered", "all"):
-        scope = "filtered"
-
     filters = _clean_audit_log_filters(request.args)
-    if scope == "all":
-        filters = _clean_audit_log_filters({})
     rows, _ = _load_audit_logs(filters)
+    # _load_audit_logs 会把表里不存在的 target_type 清空，所以在它之后判断才准确
+    has_filters = any(filters.values())
 
     wb = Workbook()
     ws = wb.active
@@ -750,10 +745,10 @@ def export_audit_log():
         "export_audit_log",
         "audit_log",
         None,
-        f"导出审计日志：{'全部' if scope == 'all' else '筛选结果'}，共 {len(rows)} 条",
+        f"导出审计日志：{'筛选结果' if has_filters else '全部'}，共 {len(rows)} 条",
     )
 
-    prefix = "audit_log_all" if scope == "all" else "audit_log_filtered"
+    prefix = "audit_log_filtered" if has_filters else "audit_log_all"
     filename = f"{prefix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
     output = BytesIO()
     wb.save(output)

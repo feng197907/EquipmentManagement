@@ -55,20 +55,12 @@
           共 {{ rows|length }} 条{% if rows|length >= result_limit %}（最多显示 {{ result_limit }} 条，按时间倒序）{% endif %}
         </span>
 
-        {# formaction 让同一张筛选表单直接提交到导出路由，带上全部筛选参数 #}
+        {# 单个导出按钮：带上当前筛选参数，后端按「有无筛选条件」自动决定导出范围 #}
         <button class="btn btn-export" type="submit"
                 formaction="{{ url_for('dashboard.export_audit_log') }}"
-                name="scope" value="filtered"
-                title="导出当前筛选结果（不受 500 条展示上限限制）">
+                title="未设置筛选条件时导出全部日志；设置了筛选条件时导出筛选结果">
           <i data-lucide="download"></i>
-          导出筛选结果
-        </button>
-        <button class="btn btn-export" type="submit"
-                formaction="{{ url_for('dashboard.export_audit_log') }}"
-                name="scope" value="all"
-                title="忽略筛选条件，导出全部审计日志">
-          <i data-lucide="file-down"></i>
-          导出全部
+          导出
         </button>
       </div>
     </form>

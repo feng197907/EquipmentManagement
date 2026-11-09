@@ -123,15 +123,16 @@ GET /audit_log/export
 
 `/audit_log` 支持 `user` / `start_date` / `end_date` / `target_type` 四个筛选参数，页面最多显示 500 条。
 
-`/audit_log/export` 返回 `.xlsx` 附件：
+`/audit_log/export` 返回 `.xlsx` 附件，参数与页面筛选完全一致：
 
-| 参数 | 取值 | 说明 |
-|------|------|------|
-| `scope` | `filtered`（默认） | 复用页面筛选参数，导出筛选结果 |
-| `scope` | `all` | 忽略筛选参数，导出全部日志 |
-| `user` / `start_date` / `end_date` / `target_type` | 同页面 | 仅 `scope=filtered` 时生效 |
+| 参数 | 说明 |
+|------|------|
+| `user` | 操作人，模糊匹配 |
+| `start_date` / `end_date` | 日期范围，`YYYY-MM-DD`（含当天） |
+| `target_type` | 目标类型，精确匹配 |
 
-导出不受页面 500 条上限限制。
+四个参数都不传（或全为空）时导出全表；只要带了任一有效条件就只导出筛选结果。
+导出不受页面 500 条上限限制；筛选结果为 0 条时返回只有表头的空文件。
 
 ---
 
