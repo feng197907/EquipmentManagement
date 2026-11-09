@@ -193,8 +193,7 @@ EquipmentManagement/
 ├── deploy/                   # 部署脚本
 │   ├── compose-deploy.sh     #   一键发布（拉代码 → 建镜像 → 换容器 → 等健康）
 │   ├── status.sh             #   上线状态自检（只读，8 项）
-│   ├── nginx-*.conf.example  #   nginx 反代样例
-│   └── dms*.service          #   systemd 单元（当前未启用，仅留作备选方案）
+│   └── nginx-*.conf.example  #   nginx 反代样例（HTTPS / HTTP 直连）
 │
 ├── scripts/                  # 一次性脚本：db/ 数据迁移、webhook_* 自动部署
 ├── docs/                     # 文档（见下方「文档」一节）

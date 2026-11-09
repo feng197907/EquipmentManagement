@@ -150,9 +150,11 @@ EquipmentManagement/
 │   ├── compose-deploy.sh     #   一键发布（拉代码→建镜像→换容器→等健康）
 │   ├── status.sh             #   上线状态自检（只读，8 项）
 │   ├── nginx-http-direct.conf.example  # nginx 反代样例（HTTP 直连）
-│   ├── nginx-ssl.conf.example          # nginx 反代样例（HTTPS）
-│   ├── dms.service           #   ⚠️ 历史：systemd 单元，已由 Docker 取代
-│   └── dms-webhook.service   #   ⚠️ 历史：Webhook 服务单元，服务已停用
+│   └── nginx-ssl.conf.example          # nginx 反代样例（HTTPS）
+│
+│   # 曾经的 dms.service / dms-webhook.service 已删除：Docker 上线后 systemd
+│   # 那套是停用状态，且 dms.service 把生产 MYSQL_PASSWORD / SECRET_KEY 写成了
+│   # 明文并提交进公开仓库。需要时从 git 历史取，但别再提交明文。
 │
 └── docs/                     # 文档
     ├── 上线操作手册.md         #   发布/回滚/排错（运维必看）
