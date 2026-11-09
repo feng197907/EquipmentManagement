@@ -9,8 +9,7 @@
 
 *.sh            text eol=lf
 
-# systemd unit / nginx 配置同理，带 CRLF 会被解析成怪错误
-*.service       text eol=lf
+# nginx 配置样例同理，带 CRLF 会被解析成怪错误
 *.conf          text eol=lf
 *.example       text eol=lf
 

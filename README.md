@@ -195,10 +195,9 @@ EquipmentManagement/
 │   ├── status.sh             #   上线状态自检（只读，8 项）
 │   └── nginx-*.conf.example  #   nginx 反代样例（HTTPS / HTTP 直连）
 │
-├── scripts/                  # 一次性脚本：db/ 数据迁移、webhook_* 自动部署
+├── scripts/                  # 一次性脚本：仅 db/ 两个数据库迁移工具
 ├── docs/                     # 文档（见下方「文档」一节）
-├── tests/                    # 测试
-└── migrate/                  # 服务器搬家脚本
+└── tests/                    # 测试
 ```
 
 ---

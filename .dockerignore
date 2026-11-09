@@ -36,7 +36,6 @@ uploads
 # 所以只排截图，保留 docs/*.md。
 tests
 deploy
-migrate
 scripts
 docs/screenshots
 *.md

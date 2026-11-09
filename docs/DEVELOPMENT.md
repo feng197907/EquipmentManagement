@@ -139,22 +139,16 @@ EquipmentManagement/
 │   ├── test_esign.py         #   电子签名测试
 │   └── test_maintenance.py   #   维护模块测试
 │
-├── scripts/                  # 一次性/历史脚本
-│   ├── db/                   #   数据库迁移工具（一次性，用完即可）
-│   │   ├── import_mysql.py           # 从 sqlite_export.json 导入 MySQL
-│   │   └── migrate_sqlite_to_mysql.py # SQLite 整库迁到 MySQL
-│   ├── webhook_server.py     #   GitHub Webhook 监听器（已停用，见下方说明）
-│   └── webhook-deploy.sh     #   自动部署脚本（同上）
+├── scripts/                  # 一次性工具（不参与运行）
+│   └── db/                   #   数据库迁移
+│       ├── import_mysql.py           # 从 sqlite_export.json 导入 MySQL
+│       └── migrate_sqlite_to_mysql.py # SQLite 整库迁到 MySQL
 │
 ├── deploy/                   # 部署
 │   ├── compose-deploy.sh     #   一键发布（拉代码→建镜像→换容器→等健康）
 │   ├── status.sh             #   上线状态自检（只读，8 项）
 │   ├── nginx-http-direct.conf.example  # nginx 反代样例（HTTP 直连）
 │   └── nginx-ssl.conf.example          # nginx 反代样例（HTTPS）
-│
-│   # 曾经的 dms.service / dms-webhook.service 已删除：Docker 上线后 systemd
-│   # 那套是停用状态，且 dms.service 把生产 MYSQL_PASSWORD / SECRET_KEY 写成了
-│   # 明文并提交进公开仓库。需要时从 git 历史取，但别再提交明文。
 │
 └── docs/                     # 文档
     ├── 上线操作手册.md         #   发布/回滚/排错（运维必看）
@@ -164,11 +158,6 @@ EquipmentManagement/
     ├── 使用手册.md            #   用户手册
     └── PRD-2026-05-11.md     #   产品需求文档（2026-05 版）
 ```
-
-> **关于 webhook 与 systemd**：这两套是 Docker 改造之前的上线方式。
-> 现在服务器上 `dms` 和 `dms-webhook` 两个 systemd 服务都是 `inactive`，
-> 发布统一走 `deploy/compose-deploy.sh`。相关文件保留仅为追溯，
-> 不要在正在用容器的机器上再 `systemctl start dms`，会抢占 `127.0.0.1:5000`。
 
 ---
 
