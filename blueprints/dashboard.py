@@ -691,8 +691,6 @@ def audit_log():
         rows=rows,
         target_types=target_types,
         result_limit=AUDIT_LOG_PAGE_LIMIT,
-        # 导出按钮的展示态；真正的权限校验在服务端由 @admin_required 执行
-        can_export=bool(current_user.is_authenticated and current_user.is_admin),
         **filters,
     )
 
@@ -705,7 +703,7 @@ def export_audit_log():
     scope=filtered：复用页面上的筛选条件；
     scope=all：忽略筛选条件导出全表。
     页面有 500 条展示上限，导出不加 LIMIT，保证「导出全部」是真正的全部。
-    前端 disabled 只是展示态，admin 权限由本路由的装饰器在服务端强制校验。
+    本路由由 @admin_required 保护：直接输入 URL 也进不来，不依赖页面按钮是否可见。
     """
     scope = request.args.get("scope", "filtered")
     if scope not in ("filtered", "all"):

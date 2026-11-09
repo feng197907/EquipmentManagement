@@ -59,24 +59,18 @@
         <button class="btn btn-export" type="submit"
                 formaction="{{ url_for('dashboard.export_audit_log') }}"
                 name="scope" value="filtered"
-                {% if can_export %}title="导出当前筛选结果（不受 500 条展示上限限制）"{% else %}disabled aria-disabled="true" title="仅管理员可导出审计日志"{% endif %}>
+                title="导出当前筛选结果（不受 500 条展示上限限制）">
           <i data-lucide="download"></i>
           导出筛选结果
         </button>
         <button class="btn btn-export" type="submit"
                 formaction="{{ url_for('dashboard.export_audit_log') }}"
                 name="scope" value="all"
-                {% if can_export %}title="忽略筛选条件，导出全部审计日志"{% else %}disabled aria-disabled="true" title="仅管理员可导出审计日志"{% endif %}>
+                title="忽略筛选条件，导出全部审计日志">
           <i data-lucide="file-down"></i>
           导出全部
         </button>
       </div>
-      {% if not can_export %}
-      <p class="text-muted small mt-2 mb-0">
-        <i data-lucide="lock" class="align-text-bottom"></i>
-        导出功能仅管理员可用，当前账号的导出按钮为禁用状态。
-      </p>
-      {% endif %}
     </form>
   </div>
 </div>

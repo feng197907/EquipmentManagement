@@ -119,7 +119,7 @@ GET /audit_log
 GET /audit_log/export
 ```
 
-**权限**：`audit_log`（仅 admin）
+**权限**：仅 admin（页面与导出路由统一由 `@admin_required` 保护，页面按钮不再做重复判断）
 
 `/audit_log` 支持 `user` / `start_date` / `end_date` / `target_type` 四个筛选参数，页面最多显示 500 条。
 
@@ -131,7 +131,7 @@ GET /audit_log/export
 | `scope` | `all` | 忽略筛选参数，导出全部日志 |
 | `user` / `start_date` / `end_date` / `target_type` | 同页面 | 仅 `scope=filtered` 时生效 |
 
-导出不受页面 500 条上限限制；非 admin 请求会被服务端拒绝。
+导出不受页面 500 条上限限制。
 
 ---
 
