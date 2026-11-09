@@ -1,10 +1,11 @@
 # 密码重置功能 Blueprint
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user
-from werkzeug.security import generate_password_hash
 
 from database import get_db
 from utils.decorators import admin_required
+from utils import password_utils as password_service
+from utils.password_utils import validate_password_form
 
 password_bp = Blueprint("password", __name__)
 
@@ -116,7 +117,6 @@ def admin_reset_password(request_id):
         flash("需要管理类角色权限", "danger")
         return redirect(url_for("auth.login"))
 
-    new_password = request.form.get("new_password", "").strip()
     action = request.form.get("action", "reset")  # reset 或 cancel
 
     conn = get_db()
@@ -154,31 +154,26 @@ def admin_reset_password(request_id):
         flash(f"已取消用户 {reset_req['username']} 的密码重置请求", "info")
         return redirect(url_for("password.admin_password_resets"))
 
-    # 执行密码重置
-    if len(new_password) < 4:
-        flash("新密码长度不能少于4个字符", "danger")
+    # 执行密码重置：长度与二次确认校验统一交给 password_utils
+    pwd, error = validate_password_form(request.form)
+    if error:
         conn.close()
+        flash(error, "danger")
         return redirect(url_for("password.admin_password_resets"))
 
-    # 更新用户密码
-    hashed_password = generate_password_hash(new_password, method='pbkdf2:sha256')
-    cur.execute(
-        "UPDATE users SET password = %s WHERE id = %s",
-        (hashed_password, reset_req["user_id"]),
-    )
-
-    # 更新重置请求状态
-    cur.execute(
-        """UPDATE password_reset_requests
-           SET status = 'completed',
-               processed_at = NOW(),
-               processed_by = %s
-           WHERE id = %s""",
-        (current_user.username, request_id),
-    )
-
-    conn.commit()
+    # 服务函数自己开连接，先关闭当前连接，避免 SQLite 下锁库
     conn.close()
+    try:
+        result = password_service.reset_user_password(
+            reset_req["user_id"], pwd, current_user.username,
+            "reset_request", request_id,
+        )
+    except ValueError as exc:
+        flash(str(exc), "warning")
+        return redirect(url_for("password.admin_password_resets"))
 
-    flash(f"已成功为用户 {reset_req['username']} 重置密码", "success")
+    msg = f"已成功为用户 {result['username']} 重置密码"
+    if result["closed_pending"] > 1:
+        msg += f"；同时关闭了 {result['closed_pending']} 条待处理申请"
+    flash(msg, "success")
     return redirect(url_for("password.admin_password_resets"))

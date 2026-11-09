@@ -18,6 +18,8 @@ from config import (
 from database import get_db
 from utils.audit import log_action
 from utils.decorators import admin_required
+from utils import password_utils as password_service
+from utils.password_utils import validate_password, validate_password_form
 
 users_bp = Blueprint("users", __name__)
 
@@ -53,13 +55,16 @@ def user_list():
 def create_user():
     """创建用户"""
     username = request.form.get("username", "").strip()
-    password = request.form.get("password", "").strip()
     role = request.form.get("role", "equipment_engineer").strip()
     # 获取菜单权限选择
     selected_permissions = request.form.getlist("menu_permissions")
 
-    if not username or not password:
-        flash("用户名和密码不能为空。", "warning")
+    if not username:
+        flash("用户名不能为空。", "warning")
+        return redirect(url_for("users.user_list"))
+    password, error = validate_password(request.form.get("password"))
+    if error:
+        flash(error, "danger")
         return redirect(url_for("users.user_list"))
     # 验证角色是否合法（使用 config.ROLES）
     if not is_valid_role(role):
@@ -207,4 +212,29 @@ def delete_user(user_id):
     )
     conn.close()
     flash(f"用户 {user_row['username']} 已删除。", "success")
+    return redirect(url_for("users.user_list"))
+
+
+@users_bp.route("/users/<int:user_id>/reset-password", methods=["POST"])
+@admin_required
+def reset_user_password(user_id):
+    """管理员在用户管理页主动重置其他用户的密码"""
+    if current_user.id == user_id:
+        flash("不能重置当前登录用户的密码。", "warning")
+        return redirect(url_for("users.user_list"))
+
+    pwd, error = validate_password_form(request.form)
+    if error:
+        flash(error, "danger")
+        return redirect(url_for("users.user_list"))
+
+    try:
+        result = password_service.reset_user_password(
+            user_id, pwd, current_user.username, "admin_direct"
+        )
+    except ValueError as exc:
+        flash(str(exc), "warning")
+        return redirect(url_for("users.user_list"))
+
+    flash(f"用户 {result['username']} 的密码已重置。", "success")
     return redirect(url_for("users.user_list"))

@@ -685,6 +685,22 @@ POST /users/<int:user_id>/delete
 
 ---
 
+### 重置用户密码
+
+```
+POST /users/<int:user_id>/reset-password
+```
+
+**权限**：仅 `admin`（`@admin_required`）；不能重置当前登录用户自身，允许重置其他 admin 账号。
+
+**表单参数**：`new_password`、`confirm_password`（两次输入需一致，新密码长度不少于 4 个字符）。
+
+**响应**：`302 redirect` 回 `/users`，结果通过 `flash` 提示。
+
+该端点与 `POST /admin/password-resets/<int:request_id>/reset`（执行密码重置）**共用同一改密服务** `utils/password_utils.reset_user_password()`：两者都会把用户密码改为新值、写入审计日志 `reset_user_password`，并**把该用户全部 `pending` 状态的密码重置申请批量置为 `completed`**。因此直接重置后旧的待处理申请不会再被二次处理，顶栏闹铃归零，用户也可重新提交申请。
+
+---
+
 ## 密码重置
 
 ### 忘记密码
@@ -714,9 +730,11 @@ GET /admin/password-resets
 POST /admin/password-resets/<int:request_id>/reset
 ```
 
-**权限**：管理类角色
+**权限**：仅 admin（`@admin_required`）
 
-重置后用户密码将被设为系统默认值。
+表单字段 `new_password` / `confirm_password`，管理员填写的新密码经服务端校验（至少 4 个字符、两次一致）后写入 `users.password`，**不是**设为系统默认值。
+
+与 `POST /users/<int:user_id>/reset-password` 共用 `utils/password_utils.reset_user_password()`：同一事务内改密、把该用户所有 `pending` 申请批量置为 `completed`（含当前这条），提交后写一条 `reset_user_password` 审计日志。`action=cancel` 时只把该条置 `cancelled`，不改密码。
 
 ---
 

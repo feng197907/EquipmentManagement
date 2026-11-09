@@ -23,7 +23,7 @@
         </div>
         <div class="col-md-3">
           <label class="form-label required">密码</label>
-          <input class="form-control" type="password" name="password" placeholder="输入密码" required>
+          <input class="form-control" type="password" name="password" placeholder="输入密码" minlength="4" required>
         </div>
         <div class="col-md-4">
           <label class="form-label required">角色</label>
@@ -141,6 +141,12 @@
                 权限
               </button>
 
+              <!-- 重置密码按钮 -->
+              <button class="btn btn-sm btn-outline-secondary" type="button"
+                      data-bs-toggle="modal" data-bs-target="#resetPwdModal{{ user.id }}">
+                <i data-lucide="key-round"></i> 重置密码
+              </button>
+
               <!-- 停用/启用按钮 -->
               <form method="post" action="{{ url_for('users.toggle_user', user_id=user.id) }}" class="d-inline">
                 <button class="btn btn-sm {% if user.status == 'active' %}btn-outline-warning{% else %}btn-outline-success{% endif %}" type="submit">
@@ -209,6 +215,44 @@
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                   <button type="submit" class="btn btn-primary">保存权限</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- 重置密码模态框 -->
+        {% if user.id != current_user.id %}
+        <div class="modal fade" id="resetPwdModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+              <form method="post" action="{{ url_for('users.reset_user_password', user_id=user.id) }}">
+                <div class="modal-header">
+                  <h5 class="modal-title">
+                    <i data-lucide="key-round"></i> 重置密码 - {{ user.username }}
+                  </h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label for="new_password_{{ user.id }}" class="form-label form-label-sm">新密码</label>
+                    <input type="password" name="new_password" id="new_password_{{ user.id }}"
+                           class="form-control" minlength="4" required autofocus placeholder="至少4个字符"
+                           oninput="checkResetPasswordMatch({{ user.id }})">
+                  </div>
+                  <div class="mb-0">
+                    <label for="confirm_password_{{ user.id }}" class="form-label form-label-sm">确认新密码</label>
+                    <input type="password" name="confirm_password" id="confirm_password_{{ user.id }}"
+                           class="form-control" required oninput="checkResetPasswordMatch({{ user.id }})">
+                    <div class="invalid-feedback" id="resetPwdMismatch{{ user.id }}">两次输入的密码不一致</div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                  <button type="submit" class="btn btn-primary" id="resetPwdSubmit{{ user.id }}">
+                    <i data-lucide="check"></i> 确认重置
+                  </button>
                 </div>
               </form>
             </div>
@@ -291,6 +335,32 @@ document.getElementById('role-select').addEventListener('change', function() {
     }
   });
 });
+
+// 重置密码弹窗：校验两次输入是否一致
+function checkResetPasswordMatch(id) {
+  var pwdInput = document.getElementById('new_password_' + id);
+  var confirmInput = document.getElementById('confirm_password_' + id);
+  var submitBtn = document.getElementById('resetPwdSubmit' + id);
+  var feedback = document.getElementById('resetPwdMismatch' + id);
+  var pwd = pwdInput.value;
+  var confirmPwd = confirmInput.value;
+
+  if (confirmPwd && pwd !== confirmPwd) {
+    confirmInput.classList.add('is-invalid');
+    confirmInput.classList.remove('is-valid');
+    if (feedback) feedback.style.display = 'block';
+    submitBtn.disabled = true;
+  } else if (confirmPwd) {
+    confirmInput.classList.remove('is-invalid');
+    confirmInput.classList.add('is-valid');
+    if (feedback) feedback.style.display = 'none';
+    submitBtn.disabled = false;
+  } else {
+    confirmInput.classList.remove('is-invalid', 'is-valid');
+    if (feedback) feedback.style.display = 'none';
+    submitBtn.disabled = false;
+  }
+}
 </script>
 
 {% endblock %}

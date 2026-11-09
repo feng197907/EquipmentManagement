@@ -119,7 +119,7 @@ def create_app():
 | `device_changes_bp` | `device_changes.py` | `/` | 设备状态变更审批 |
 | `maintenance_bp` | `maintenance.py` | `/device/<int:device_id>/maintenance` | 维护计划 CRUD、维护记录、维修记录、历史查看、数据导出 |
 | `spare_part_bp` | `spare_part.py` | `/spare-parts` | 备件 CRUD、入库/消耗、库存预警、成本统计、数据导出 |
-| `users_bp` | `users.py` | `/` | 用户 CRUD、角色权限分配、启用/停用、删除 |
+| `users_bp` | `users.py` | `/` | 用户 CRUD、角色权限分配、启用/停用、删除、密码重置 |
 | `settings_bp` | `settings.py` | `/` | 系统设置（借阅开关等） |
 | `password_bp` | `password.py` | `/` | 忘记密码、管理员密码重置 |
 | `search_bp` | `search.py` | `/search` | 全局搜索（设备/文档/备件） |
@@ -138,18 +138,18 @@ def create_app():
 | device_changes | 2 | GET, POST |
 | maintenance | 18 | GET, POST, PUT, DELETE |
 | spare_part | 16 | GET, POST, PUT |
-| users | 5 | GET, POST |
+| users | 6 | GET, POST |
 | settings | 1 | GET, POST |
 | password | 3 | GET, POST |
 | search | 2 | GET, POST |
 | esign | 5 | GET, POST |
-| **小计** | **85** | |
+| **小计** | **86** | |
 | `/healthz` | 1 | GET（直接注册在 app 上，不属任何蓝图） |
-| **总计** | **86** | |
+| **总计** | **87** | |
 
 > 统计口径：`app.url_map` 中除 `static` 外的全部路由。
 > 其中 4 个 URL 上挂了多个端点（同一路径的 GET / POST 分开注册），
-> 所以按端点计数是 86、按 URL 去重是 82。
+> 所以按端点计数是 87、按 URL 去重是 83。
 
 ---
 
