@@ -1,11 +1,8 @@
 # 备件库存管理 Blueprint
 from datetime import datetime
-from io import BytesIO
 
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 from database import DB_TYPE, get_db
 from models.spare_part import (
@@ -18,53 +15,9 @@ from models.spare_part import (
 )
 from utils.audit import log_action
 from utils.decorators import admin_required, permission_required
+from utils.excel_export import export_to_excel
 
 spare_part_bp = Blueprint("spare_part", __name__, url_prefix="/spare-parts")
-
-
-# ============================================================
-# Excel 导出辅助函数（与其他 Blueprint 保持一致风格）
-# ============================================================
-
-
-def _excel_response(wb, filename):
-    """将 Workbook 转为 Flask send_file 响应"""
-    buf = BytesIO()
-    wb.save(buf)
-    buf.seek(0)
-    return send_file(
-        buf,
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        as_attachment=True,
-        download_name=filename,
-    )
-
-
-def _header_style(cell):
-    """蓝色加粗表头"""
-    cell.font = Font(bold=True, color="FFFFFF")
-    cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-    cell.alignment = Alignment(horizontal="center", vertical="center")
-
-
-def _border(cell):
-    """细边框"""
-    thin = Side(style="thin", color="000000")
-    cell.border = Border(left=thin, right=thin, top=thin, bottom=thin)
-
-
-def _auto_width(ws):
-    """自动调整列宽"""
-    for col in ws.columns:
-        max_len = 0
-        col_letter = col[0].column_letter
-        for cell in col:
-            try:
-                if cell.value:
-                    max_len = max(max_len, len(str(cell.value)))
-            except Exception:
-                pass
-        ws.column_dimensions[col_letter].width = min(max_len + 2, 50)
 
 
 @spare_part_bp.route("/")
@@ -149,47 +102,37 @@ def spare_part_export():
     rows = cur.fetchall()
     conn.close()
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "备件列表"
-
     headers = ["序号", "备件编码", "备件名称", "分类", "规格型号", "单位", "品牌",
                "库存量", "安全库存下限", "安全库存上限", "加权均价(元)",
                "供应商", "供应商联系人", "供应商电话", "备注", "创建时间"]
-    ws.append(headers)
-    for cell in ws[1]:
-        _header_style(cell)
-        _border(cell)
-
-    for i, row in enumerate(rows, 1):
-        ws.append([
+    export_rows = [
+        [
             i,
-            row["code"] or "",
-            row["name"] or "",
-            SPARE_PART_CATEGORY_LABELS.get(row["category"], row["category"] or ""),
-            row["specification"] or "",
-            row["unit"] or "",
-            row["brand"] or "",
+            row["code"],
+            row["name"],
+            SPARE_PART_CATEGORY_LABELS.get(row["category"], row["category"]),
+            row["specification"],
+            row["unit"],
+            row["brand"],
             row["current_stock"],
             row["safety_stock_min"],
             row["safety_stock_max"],
             round(float(row["weighted_avg_price"] or 0), 2),
-            row["supplier_name"] or "",
-            row["supplier_contact"] or "",
-            row["supplier_phone"] or "",
-            row["remark"] or "",
-            str(row["created_at"]) if row["created_at"] else "",
-        ])
+            row["supplier_name"],
+            row["supplier_contact"],
+            row["supplier_phone"],
+            row["remark"],
+            row["created_at"],
+        ]
+        for i, row in enumerate(rows, 1)
+    ]
 
-    for data_row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-        for cell in data_row:
-            _border(cell)
-            cell.alignment = Alignment(vertical="center", wrap_text=True)
-
-    _auto_width(ws)
-
-    filename = f"备件列表_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    return _excel_response(wb, filename)
+    return export_to_excel(
+        filename_prefix="备件列表",
+        sheet_title="备件列表",
+        headers=headers,
+        rows=export_rows,
+    )
 
 
 @spare_part_bp.route("/stats")
@@ -382,44 +325,34 @@ def inbound_export():
     rows = cur.fetchall()
     conn.close()
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "备件入库记录"
-
     headers = ["序号", "备件编码", "备件名称", "规格型号", "单位",
                "入库数量", "单价(元)", "金额(元)", "批次号",
                "入库日期", "操作人", "录入时间", "备注"]
-    ws.append(headers)
-    for cell in ws[1]:
-        _header_style(cell)
-        _border(cell)
-
-    for i, row in enumerate(rows, 1):
-        ws.append([
+    export_rows = [
+        [
             i,
-            row["code"] or "",
-            row["name"] or "",
-            row["specification"] or "",
-            row["unit"] or "",
+            row["code"],
+            row["name"],
+            row["specification"],
+            row["unit"],
             row["quantity"],
             round(float(row["unit_price"] or 0), 2),
             round(float(row["total_amount"] or 0), 2),
-            row["batch_no"] or "",
-            str(row["inbound_date"]) if row["inbound_date"] else "",
-            row["created_by"] or "",
-            str(row["created_at"]) if row["created_at"] else "",
-            row["remark"] or "",
-        ])
+            row["batch_no"],
+            row["inbound_date"],
+            row["created_by"],
+            row["created_at"],
+            row["remark"],
+        ]
+        for i, row in enumerate(rows, 1)
+    ]
 
-    for data_row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-        for cell in data_row:
-            _border(cell)
-            cell.alignment = Alignment(vertical="center", wrap_text=True)
-
-    _auto_width(ws)
-
-    filename = f"备件入库记录_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    return _excel_response(wb, filename)
+    return export_to_excel(
+        filename_prefix="备件入库记录",
+        sheet_title="备件入库记录",
+        headers=headers,
+        rows=export_rows,
+    )
 
 
 @spare_part_bp.route("/consumptions/export")
@@ -463,46 +396,36 @@ def consumption_export():
     rows = cur.fetchall()
     conn.close()
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "备件消耗记录"
-
     headers = ["序号", "备件编码", "备件名称", "规格型号", "单位",
                "消耗数量", "单价(元)", "金额(元)",
                "关联设备编码", "关联设备名称", "维修记录ID",
                "消耗人", "消耗时间", "备注"]
-    ws.append(headers)
-    for cell in ws[1]:
-        _header_style(cell)
-        _border(cell)
-
-    for i, row in enumerate(rows, 1):
-        ws.append([
+    export_rows = [
+        [
             i,
-            row["code"] or "",
-            row["name"] or "",
-            row["specification"] or "",
-            row["unit"] or "",
+            row["code"],
+            row["name"],
+            row["specification"],
+            row["unit"],
             row["quantity"],
             round(float(row["unit_price"] or 0), 2),
             round(float(row["total_amount"] or 0), 2),
-            row["device_code"] or "",
-            row["device_name"] or "",
-            row["maintenance_record_id"] or "",
-            row["consumed_by"] or "",
-            str(row["consumed_at"]) if row["consumed_at"] else "",
-            row["remark"] or "",
-        ])
+            row["device_code"],
+            row["device_name"],
+            row["maintenance_record_id"],
+            row["consumed_by"],
+            row["consumed_at"],
+            row["remark"],
+        ]
+        for i, row in enumerate(rows, 1)
+    ]
 
-    for data_row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-        for cell in data_row:
-            _border(cell)
-            cell.alignment = Alignment(vertical="center", wrap_text=True)
-
-    _auto_width(ws)
-
-    filename = f"备件消耗记录_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    return _excel_response(wb, filename)
+    return export_to_excel(
+        filename_prefix="备件消耗记录",
+        sheet_title="备件消耗记录",
+        headers=headers,
+        rows=export_rows,
+    )
 
 
 @spare_part_bp.route("/consumptions")

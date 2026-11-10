@@ -1,21 +1,18 @@
 import importlib
 
 # 看板与提醒 Blueprint
-from io import BytesIO
 from pathlib import Path
 from flask import (
     Blueprint, current_app, flash, jsonify, redirect, render_template,
-    request, send_file, url_for,
+    request, url_for,
 )
 from flask_login import current_user, login_required
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-from openpyxl.utils import get_column_letter
 
 from config import DEVICE_STATUS_LABELS, DOC_STATUS_LABELS, ROLE_LABELS
 from database import get_db, get_system_setting
 from utils.audit import log_action
 from utils.decorators import admin_required
+from utils.excel_export import export_to_excel
 from utils.helpers import build_calibration_reminders, get_document_rows
 from utils.maintenance import build_due_maintenance_reminders, get_maintenance_type_label
 from datetime import datetime, date, timezone
@@ -664,21 +661,6 @@ def _load_audit_logs(filters, limit=None):
     return rows, target_types
 
 
-def _excel_cell(value):
-    """把数据库值转成可安全写入 xlsx 的文本。
-
-    审计日志里有用户输入（详情/修改前后值），需要清掉控制字符并限制长度，
-    否则 openpyxl 会抛 IllegalCharacterError 或生成超过 Excel 上限的单元格。
-    """
-    if value is None or value == "":
-        return "-"
-    text = str(value)
-    text = "".join(ch if ch >= " " or ch in "\n\t" else " " for ch in text)
-    if len(text) > 32000:
-        text = text[:32000] + "…（已截断）"
-    return text
-
-
 @dashboard_bp.route("/audit_log")
 @admin_required
 def audit_log():
@@ -709,35 +691,6 @@ def export_audit_log():
     # _load_audit_logs 会把表里不存在的 target_type 清空，所以在它之后判断才准确
     has_filters = any(filters.values())
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "审计日志"
-
-    headers = [label for _, label, _ in AUDIT_LOG_EXPORT_COLUMNS]
-    ws.append(headers)
-    thin = Side(style="thin", color="D0D7DE")
-    for cell in ws[1]:
-        cell.font = Font(bold=True, color="FFFFFF")
-        cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-        cell.border = Border(left=thin, right=thin, top=thin, bottom=thin)
-
-    for row in rows:
-        ws.append([_excel_cell(row[key]) for key, _, _ in AUDIT_LOG_EXPORT_COLUMNS])
-
-    # 强制按文本写入，避免以 = + - @ 开头的用户输入被 Excel 当成公式执行
-    if ws.max_row >= 2:
-        for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-            for cell in row:
-                cell.data_type = "s"
-                cell.border = Border(left=thin, right=thin, top=thin, bottom=thin)
-                cell.alignment = Alignment(vertical="center", wrap_text=True)
-
-    for idx, (_, _, width) in enumerate(AUDIT_LOG_EXPORT_COLUMNS, start=1):
-        ws.column_dimensions[get_column_letter(idx)].width = width
-    ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:{get_column_letter(len(AUDIT_LOG_EXPORT_COLUMNS))}{ws.max_row}"
-
     # 导出动作本身也留痕，便于 GMP 追溯「谁把日志导走了」。
     # 放在查询之后，本次导出的文件里不会混入这条自身记录。
     log_action(
@@ -749,15 +702,12 @@ def export_audit_log():
     )
 
     prefix = "audit_log_filtered" if has_filters else "audit_log_all"
-    filename = f"{prefix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    return send_file(
-        output,
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        as_attachment=True,
-        download_name=filename,
+    return export_to_excel(
+        filename_prefix=prefix,
+        sheet_title="审计日志",
+        headers=[label for _, label, _ in AUDIT_LOG_EXPORT_COLUMNS],
+        rows=[[row[key] for key, _, _ in AUDIT_LOG_EXPORT_COLUMNS] for row in rows],
+        column_widths=[width for _, _, width in AUDIT_LOG_EXPORT_COLUMNS],
     )
 
 

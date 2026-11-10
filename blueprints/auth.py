@@ -1,16 +1,12 @@
 # 认证 Blueprint
-from datetime import datetime
-from io import BytesIO
-
-from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from werkzeug.security import check_password_hash
 
 from config import DEVICE_STATUS_LABELS
 from database import get_db
 from utils.audit import log_action
+from utils.excel_export import export_to_excel
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -79,32 +75,6 @@ def index():
     )
 
 
-def _create_excel_response(wb, filename):
-    """将 Workbook 转为 Flask send_file 响应"""
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    return send_file(
-        output,
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        as_attachment=True,
-        download_name=filename,
-    )
-
-
-def _set_header_style(cell):
-    """设置表头样式"""
-    cell.font = Font(bold=True, color="FFFFFF")
-    cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-    cell.alignment = Alignment(horizontal="center", vertical="center")
-
-
-def _set_border(cell):
-    """设置单元格边框"""
-    thin = Side(style="thin", color="000000")
-    cell.border = Border(left=thin, right=thin, top=thin, bottom=thin)
-
-
 @auth_bp.route("/devices/export")
 @login_required
 def export_devices():
@@ -129,41 +99,21 @@ def export_devices():
     devices = cur.fetchall()
     conn.close()
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "设备列表"
-
     headers = ["设备编码", "设备名称", "型号", "位置", "状态"]
-    ws.append(headers)
-    for cell in ws[1]:
-        _set_header_style(cell)
-        _set_border(cell)
-
-    for device in devices:
-        ws.append([
-            device["device_code"] or "-",
-            device["device_name"] or "-",
-            device["model"] or "-",
-            device["location"] or "-",
+    export_rows = [
+        [
+            device["device_code"],
+            device["device_name"],
+            device["model"],
+            device["location"],
             DEVICE_STATUS_LABELS.get(device["status"], device["status"]),
-        ])
+        ]
+        for device in devices
+    ]
 
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-        for cell in row:
-            _set_border(cell)
-            cell.alignment = Alignment(vertical="center", wrap_text=True)
-
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if cell.value:
-                    max_length = max(max_length, len(str(cell.value)))
-            except Exception:
-                pass
-        adjusted_width = min(max_length + 2, 50)
-        ws.column_dimensions[column].width = adjusted_width
-
-    filename = f"devices_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    return _create_excel_response(wb, filename)
+    return export_to_excel(
+        filename_prefix="devices",
+        sheet_title="设备列表",
+        headers=headers,
+        rows=export_rows,
+    )

@@ -171,19 +171,21 @@
 }
 
 /* 审计日志：导出按钮。
-   .search-actions .btn 把文字强制成白色，这里用更高特异性把 outline 绿改回来 */
+   .search-actions .btn 把文字强制成白色，这里用更高特异性把 outline 主色改回来，
+   与文档页/设备页的导出按钮保持同一套视觉语言（蓝底白字描边态） */
 .audit-export-actions {
   flex-wrap: wrap;
 }
 
-.search-actions .btn.btn-export {
+.search-actions .btn.btn-outline-primary {
   background: var(--bg-card);
-  border-color: #198754;
-  color: #198754 !important;
+  border-color: var(--color-primary);
+  color: var(--color-primary) !important;
 }
 
-.search-actions .btn.btn-export:hover {
-  background: #198754;
+.search-actions .btn.btn-outline-primary:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: #fff !important;
 }
 

@@ -1,11 +1,9 @@
 # 文档 Blueprint
+import os
 from datetime import datetime
-from io import BytesIO
 
-from flask import Blueprint, flash, redirect, render_template, request, send_file, send_from_directory, url_for
+from flask import Blueprint, flash, redirect, render_template, request, send_from_directory, url_for
 from flask_login import current_user, login_required
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from werkzeug.utils import secure_filename
 
 from config import (
@@ -17,6 +15,7 @@ from database import get_db, get_system_setting
 from utils.audit import log_action
 from utils.db_utils import commit_with_retry, execute_with_retry, get_next_version
 from utils.decorators import admin_required
+from utils.excel_export import export_to_excel
 from utils.file_utils import allowed_file, compute_doc_hash, ensure_upload_dir
 
 documents_bp = Blueprint("documents", __name__)
@@ -343,36 +342,6 @@ def document_history(doc_id):
     )
 
 
-# 需要 os 模块用于路径拼接
-import os
-
-
-def _create_excel_response(wb, filename):
-    """将 Workbook 转为 Flask send_file 响应"""
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    return send_file(
-        output,
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        as_attachment=True,
-        download_name=filename,
-    )
-
-
-def _set_header_style(cell):
-    """设置表头样式"""
-    cell.font = Font(bold=True, color="FFFFFF")
-    cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-    cell.alignment = Alignment(horizontal="center", vertical="center")
-
-
-def _set_border(cell):
-    """设置单元格边框"""
-    thin = Side(style="thin", color="000000")
-    cell.border = Border(left=thin, right=thin, top=thin, bottom=thin)
-
-
 @documents_bp.route("/documents/export")
 @login_required
 def export_documents():
@@ -419,44 +388,24 @@ def export_documents():
     rows = cur.fetchall()
     conn.close()
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "文档列表"
-
     headers = ["设备编码", "设备名称", "文档名称", "类型", "版本", "状态", "上传人", "上传时间"]
-    ws.append(headers)
-    for cell in ws[1]:
-        _set_header_style(cell)
-        _set_border(cell)
-
-    for row in rows:
-        ws.append([
-            row["device_code"] or "-",
-            row["device_name"] or "-",
-            row["doc_name"] or "-",
+    export_rows = [
+        [
+            row["device_code"],
+            row["device_name"],
+            row["doc_name"],
             DOC_TYPE_LABELS.get(row["doc_type"], row["doc_type"]),
             f"v{row['version']}",
             DOC_STATUS_LABELS.get(row["status"], row["status"]),
-            row["uploaded_by"] or "-",
-            row["upload_time"] or "-",
-        ])
+            row["uploaded_by"],
+            row["upload_time"],
+        ]
+        for row in rows
+    ]
 
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-        for cell in row:
-            _set_border(cell)
-            cell.alignment = Alignment(vertical="center", wrap_text=True)
-
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if cell.value:
-                    max_length = max(max_length, len(str(cell.value)))
-            except Exception:
-                pass
-        adjusted_width = min(max_length + 2, 50)
-        ws.column_dimensions[column].width = adjusted_width
-
-    filename = f"documents_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    return _create_excel_response(wb, filename)
+    return export_to_excel(
+        filename_prefix="documents",
+        sheet_title="文档列表",
+        headers=headers,
+        rows=export_rows,
+    )

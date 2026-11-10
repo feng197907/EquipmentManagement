@@ -1,12 +1,9 @@
 # 维护计划 Blueprint
 from datetime import datetime
-from io import BytesIO
 import json
 
-from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill, Side, Border
 
 from config import FIXED_INTERVAL_LABELS, FIXED_INTERVAL_OPTIONS, MAINTENANCE_RESULTS, MAINTENANCE_RESULT_LABELS, MAINTENANCE_TYPE_LABELS, MAINTENANCE_TYPES
 from database import get_db
@@ -14,6 +11,7 @@ from models.electronic_signature import ElectronicSignature, SIGN_MEANINGS
 from models.maintenance import DeviceRepairRecord, MaintenancePlan, MaintenanceRecord
 from utils.audit import log_action
 from utils.decorators import admin_required, permission_required
+from utils.excel_export import export_to_excel
 from utils.maintenance import calc_next_due_date, calc_urgency
 
 maintenance_bp = Blueprint("maintenance", __name__, url_prefix="/device/<int:device_id>/maintenance")
@@ -869,34 +867,8 @@ def delete_repair_record(device_id, record_id):
 
 
 # ============================================================
-# 导出功能
+# 导出功能（排版统一交给 utils.excel_export）
 # ============================================================
-
-def _create_excel_response(wb, filename):
-    """将 Workbook 转为 Flask send_file 响应"""
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    return send_file(
-        output,
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        as_attachment=True,
-        download_name=filename,
-    )
-
-
-def _set_header_style(cell):
-    """设置表头样式"""
-    cell.font = Font(bold=True, color="FFFFFF")
-    cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-    cell.alignment = Alignment(horizontal="center", vertical="center")
-
-
-def _set_border(cell):
-    """设置单元格边框"""
-    thin = Side(style="thin", color="000000")
-    cell.border = Border(left=thin, right=thin, top=thin, bottom=thin)
-
 
 @maintenance_bp.route("/export/plans")
 @login_required
@@ -914,46 +886,27 @@ def export_plans(device_id):
 
     plans = MaintenancePlan.get_by_device(device_id, active_only=False)
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "维护计划"
-
     headers = ["维护类型", "周期天数", "下次到期日", "状态", "创建人", "创建时间", "更新时间"]
-    ws.append(headers)
-    for cell in ws[1]:
-        _set_header_style(cell)
-        _set_border(cell)
-
-    for plan in plans:
-        ws.append([
+    export_rows = [
+        [
             plan.maintenance_type_label,
             plan.interval_days,
             plan.next_due_date,
             "激活" if plan.is_active else "停用",
-            plan.created_by or "-",
-            plan.created_at or "-",
-            plan.updated_at or "-",
-        ])
+            plan.created_by,
+            plan.created_at,
+            plan.updated_at,
+        ]
+        for plan in plans
+    ]
 
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-        for cell in row:
-            _set_border(cell)
-            cell.alignment = Alignment(vertical="center")
-
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if cell.value:
-                    max_length = max(max_length, len(str(cell.value)))
-            except Exception:
-                pass
-        adjusted_width = min(max_length + 2, 50)
-        ws.column_dimensions[column].width = adjusted_width
-
-    filename = f"{device['device_code']}_维护计划_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    return _create_excel_response(wb, filename)
+    return export_to_excel(
+        filename_prefix=f"{device['device_code']}_维护计划",
+        sheet_title="维护计划",
+        headers=headers,
+        rows=export_rows,
+        wrap_text=False,
+    )
 
 
 @maintenance_bp.route("/export/history")
@@ -981,47 +934,26 @@ def export_history(device_id):
         per_page=9999,
     )
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "维护历史"
-
     headers = ["维护时间", "维护类型", "维护内容", "结果", "执行人", "下次到期日", "备件使用"]
-    ws.append(headers)
-    for cell in ws[1]:
-        _set_header_style(cell)
-        _set_border(cell)
-
-    for record in records:
-        result_text = MAINTENANCE_RESULT_LABELS.get(record.result, record.result)
-        ws.append([
+    export_rows = [
+        [
             record.performed_at,
             record.maintenance_type_label,
             record.content,
-            result_text,
+            MAINTENANCE_RESULT_LABELS.get(record.result, record.result),
             record.performed_by,
-            record.next_due_date or "-",
-            record.parts_used or "-",
-        ])
+            record.next_due_date,
+            record.parts_used,
+        ]
+        for record in records
+    ]
 
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-        for cell in row:
-            _set_border(cell)
-            cell.alignment = Alignment(vertical="center", wrap_text=True)
-
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if cell.value:
-                    max_length = max(max_length, len(str(cell.value)))
-            except Exception:
-                pass
-        adjusted_width = min(max_length + 2, 50)
-        ws.column_dimensions[column].width = adjusted_width
-
-    filename = f"{device['device_code']}_维护历史_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    return _create_excel_response(wb, filename)
+    return export_to_excel(
+        filename_prefix=f"{device['device_code']}_维护历史",
+        sheet_title="维护历史",
+        headers=headers,
+        rows=export_rows,
+    )
 
 
 @maintenance_bp.route("/export/repair")
@@ -1040,43 +972,22 @@ def export_repair(device_id):
 
     records, _ = DeviceRepairRecord.get_by_device(device_id, page=1, per_page=9999)
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "维修记录"
-
     headers = ["维修时间", "维修内容", "结果", "执行人", "备件使用", "创建时间"]
-    ws.append(headers)
-    for cell in ws[1]:
-        _set_header_style(cell)
-        _set_border(cell)
-
-    for record in records:
-        result_text = MAINTENANCE_RESULT_LABELS.get(record.result, record.result)
-        ws.append([
+    export_rows = [
+        [
             record.performed_at,
             record.content,
-            result_text,
+            MAINTENANCE_RESULT_LABELS.get(record.result, record.result),
             record.performed_by,
-            record.parts_used or "-",
-            record.created_at or "-",
-        ])
+            record.parts_used,
+            record.created_at,
+        ]
+        for record in records
+    ]
 
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-        for cell in row:
-            _set_border(cell)
-            cell.alignment = Alignment(vertical="center", wrap_text=True)
-
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if cell.value:
-                    max_length = max(max_length, len(str(cell.value)))
-            except Exception:
-                pass
-        adjusted_width = min(max_length + 2, 50)
-        ws.column_dimensions[column].width = adjusted_width
-
-    filename = f"{device['device_code']}_维修记录_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-    return _create_excel_response(wb, filename)
+    return export_to_excel(
+        filename_prefix=f"{device['device_code']}_维修记录",
+        sheet_title="维修记录",
+        headers=headers,
+        rows=export_rows,
+    )
