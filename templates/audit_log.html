@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <div class="search-actions audit-export-actions">
+      <div class="search-actions">
         <button class="btn btn-primary" type="submit">
           <i data-lucide="search"></i>
           查询
@@ -51,29 +51,40 @@
           <i data-lucide="rotate-ccw"></i>
           重置
         </a>
-        <span class="text-muted small ms-auto">
-          共 {{ rows|length }} 条{% if rows|length >= result_limit %}（最多显示 {{ result_limit }} 条，按时间倒序）{% endif %}
-        </span>
-
-        {# 导出走链接（与文档页一致）：参数取当前已生效的筛选条件，
-           不取输入框里的临时值，保证导出的内容与表格里看到的结果完全一致。
-           空条件传 None，url_for 会自动省略该参数，链接更干净 #}
-        <a class="btn btn-outline-primary"
-           href="{{ url_for('dashboard.export_audit_log',
-                            user=filter_user or None,
-                            start_date=start_date or None,
-                            end_date=end_date or None,
-                            target_type=filter_target_type or None) }}"
-           title="未设置筛选条件时导出全部日志；设置了筛选条件时导出筛选结果">
-          <i data-lucide="download"></i>
-          导出
-        </a>
       </div>
     </form>
   </div>
 </div>
 
-<div class="card shadow-sm">
+{# 表格卡片：头部结构与文档页/设备页一致，导出按钮统一放在右上角 #}
+<div class="data-table-card">
+  <div class="data-table-header">
+    <h3 class="data-table-title">
+      <i data-lucide="scroll-text"></i>
+      审计日志列表
+      {% if rows %}
+      <span class="data-table-count">{{ rows|length }}</span>
+      {% endif %}
+    </h3>
+    <div class="data-table-actions">
+      {% if rows|length >= result_limit %}
+      <span class="text-muted small">最多显示 {{ result_limit }} 条，按时间倒序</span>
+      {% endif %}
+      {# 导出走链接（与文档页一致）：参数取当前已生效的筛选条件，
+         不取输入框里的临时值，保证导出的内容与表格里看到的结果完全一致。
+         空条件传 None，url_for 会自动省略该参数，链接更干净 #}
+      <a class="btn btn-sm btn-outline-primary"
+         href="{{ url_for('dashboard.export_audit_log',
+                          user=filter_user or None,
+                          start_date=start_date or None,
+                          end_date=end_date or None,
+                          target_type=filter_target_type or None) }}"
+         title="未设置筛选条件时导出全部日志；设置了筛选条件时导出筛选结果">
+        <i data-lucide="download"></i>
+        导出
+      </a>
+    </div>
+  </div>
   <div class="table-responsive">
     <table class="table table-hover mb-0">
       <thead class="table-light">
